@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig, envField } from 'astro/config';
 
 import tailwindcss from '@tailwindcss/vite';
 import vercel from '@astrojs/vercel';
@@ -15,6 +15,13 @@ export default defineConfig({
   adapter: vercel(),
 
   integrations: [sitemap()],
+
+  // Server-only settings. All optional so the site builds and runs with no env vars set.
+  env: {
+    schema: {
+      PRICES_CSV_URL: envField.string({ context: 'server', access: 'secret', optional: true }),
+    },
+  },
 
   image: {
     // Allow Astro <Image /> to optimise remote gallery images from Behold / Instagram.

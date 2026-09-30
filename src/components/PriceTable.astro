@@ -1,11 +1,12 @@
 ---
-import prices from '../data/prices.fallback.json';
+import type { PriceCategory } from '../lib/prices';
 
+interface Props {
+  categories: PriceCategory[];
+}
+
+const { categories } = Astro.props;
 const fmt = (n: number | null) => (n === null ? '—' : `£${n}`);
-const categories = prices.map((c) => ({
-  ...c,
-  services: [...c.services].sort((a, b) => a.order - b.order),
-}));
 ---
 
 <div class="space-y-14">
