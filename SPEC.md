@@ -5,7 +5,7 @@
 A fast, mobile-first marketing website for a mobile car detailing business. The owner is non-technical and must be able to update **prices** and **"Our Work" photos** himself, without a custom admin dashboard and without ever managing API keys.
 
 - **Prices** are managed in a Google Sheet.
-- **Gallery** is pulled from the business's Instagram via Behold's JSON feed.
+- **Gallery** is pulled from a shared Google Drive folder the client uploads photos to.
 - **Enquiries** come in through a contact form that emails the business.
 
 
@@ -30,10 +30,10 @@ Logo is placed at assets/logo.JPG
 | Styling | Tailwind CSS |
 | Hosting | Vercel (`@astrojs/vercel` adapter) |
 | Prices source | Google Sheet published to web as CSV |
-| Gallery source | Behold JSON feed (Instagram) |
+| Gallery source | Google Drive folder (images only), read via the Drive API |
 | Contact email | Resend (via Astro API route) |
 | Spam protection | Honeypot field + Cloudflare Turnstile |
-| Images | Astro `<Image />` for local assets; remote gallery images allowed via `image.domains` config |
+| Images | Astro `<Image />` for local assets; gallery images are fetched from Drive server-side and served resized through a site route (the API key never reaches the browser) |
 
 No database. No authentication. No admin UI.
 
@@ -42,11 +42,11 @@ No database. No authentication. No admin UI.
 1. **Home (`/`)**
    - Hero: headline, service area, primary CTA ("Get a quote") and phone click-to-call, dark video background
    - Short services overview (links to Prices)
-   - Gallery preview (latest 6 posts)
+   - Gallery preview (latest 6 photos)
    - Trust section: why choose us, reviews placeholder
    - CTA band → contact
 2. **Prices (`/prices`)** — full price list rendered from the Google Sheet (see §4)
-3. **Our Work (`/our-work`)** — gallery grid from Behold (see §5)
+3. **Our Work (`/our-work`)** — gallery grid from Google Drive (see §5)
 4. **Contact (`/contact`)** — enquiry form (see §6), phone, email, service area
 5. **404** — branded, links home
 
@@ -80,17 +80,18 @@ The sheet is published via *File → Share → Publish to web → `Prices` tab �
 - `/prices` is server-rendered (`export const prerender = false`) and sets `Cache-Control: s-maxage=600, stale-while-revalidate=3600`.
 - Display: one section per category, responsive table/cards showing Small / Medium / Large columns. Blank price → "—". Prices formatted as `£35`. Include a note: "Prices are a guide — final quote depends on vehicle condition."
 
-## 5. Gallery — Behold (Instagram)
+## 5. Gallery — Google Drive folder
 
-- Env var `BEHOLD_FEED_URL` (Behold JSON feed URL).
+The client uploads photos to a Google Drive folder (shared as "anyone with the link can view"). Every image in that folder appears on the site, newest first. Images only — videos and other file types are ignored. The price sheet (§4) can live in the same folder; it is a Google Sheet, so it is ignored by the image filter.
+
+- Env vars: `GOOGLE_DRIVE_KEY` (Google Cloud API key with the Drive API enabled, read-only use) and `GOOGLE_DRIVE_FOLDER_ID` (the ID from the folder's URL). Both are server-side only.
 - `src/lib/gallery.ts`
-  - Fetch JSON server-side, map to `{ id, imageUrl, caption, permalink, timestamp }`.
-  - Include `IMAGE` and `CAROUSEL_ALBUM` (first image); for `VIDEO`, use the thumbnail.
-  - Optional filter: if env var `GALLERY_HASHTAG` is set (e.g. `#website`), only include posts whose caption contains it.
-  - Limit: 18 on `/our-work`, 6 on home.
-  - Cache 30 minutes; on failure use `src/data/gallery.fallback.json` pointing at local images in `src/assets/gallery/`.
-- Display: responsive masonry/grid, lazy-loaded, rounded corners, click opens a simple lightbox (no heavy library — a small custom component or `<dialog>`). Each item links to the Instagram post. "Follow us on Instagram" button beneath.
-- Add the Behold/Instagram CDN domains to Astro's allowed remote image domains.
+  - List the folder with the Drive API (`files.list`, query `'<folderId>' in parents and mimeType contains 'image/' and trashed = false`, ordered by `createdTime desc`, paginated) and map to `{ id, name, width, height, createdTime }`.
+  - No hashtag or caption filter: every image in the folder is shown.
+  - Limit: all images on `/our-work`, latest 6 on home.
+  - Cache the listing 30 minutes (in memory); on failure, or when the env vars are missing, use `src/data/gallery.fallback.json` pointing at local images in `src/assets/gallery/`.
+- Image route (e.g. `src/pages/api/gallery/[id].ts`): fetches the file from Drive server-side, resizes and compresses it (client photos can be 5–10MB), and returns it with long `Cache-Control` headers. The API key is never exposed to the browser. Only IDs that appear in the current folder listing are served.
+- Display: responsive masonry/grid, lazy-loaded, rounded corners, click opens a simple lightbox (no heavy library — a small custom component or `<dialog>`). "Follow us on Instagram" button beneath (the business still has an Instagram; it is just no longer the gallery source).
 
 ## 6. Contact Form
 
@@ -115,11 +116,11 @@ Behaviour:
 
 ```
 PRICES_CSV_URL=
-BEHOLD_FEED_URL=
-GALLERY_HASHTAG=          # optional
+GOOGLE_DRIVE_KEY=
+GOOGLE_DRIVE_FOLDER_ID=
 RESEND_API_KEY=
 CONTACT_TO_EMAIL=
-CONTACT_FROM_EMAIL=       # verified Resend sender on jdyorkshiredetailing.com
+CONTACT_FROM_EMAIL=       # verified Resend sender on jdyorkshiredetailingcompany.com
 TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=
 ```
@@ -174,7 +175,7 @@ src/
 Create `OWNER_GUIDE.md`: a plain-English, one-page guide for the business owner covering:
 - How to change a price, hide a service, and add a new one in the Google Sheet (and what not to change: the header row and the tab name)
 - That changes appear on the site within ~10 minutes
-- That new Instagram posts appear in the gallery automatically (and the hashtag rule, if used)
+- How to add photos: upload them to the shared Google Drive folder; every image in the folder appears in the gallery within ~30 minutes (images only; to remove a photo, delete it from the folder)
 - Who to contact if something looks wrong
 
 ## 12. Acceptance Criteria
@@ -183,8 +184,10 @@ Create `OWNER_GUIDE.md`: a plain-English, one-page guide for the business owner 
 - [ ] Setting `active` to FALSE hides that service
 - [ ] A malformed row is skipped; the rest of the page still renders
 - [ ] With the sheet URL broken, `/prices` shows fallback prices
-- [ ] New Instagram posts appear on `/our-work` within 30 minutes
-- [ ] With the Behold URL broken, the gallery shows fallback images
+- [ ] A photo uploaded to the Drive folder appears on `/our-work` within 30 minutes
+- [ ] Non-image files in the folder are ignored
+- [ ] With the Drive key or folder ID missing or broken, the gallery shows fallback images
+- [ ] The Drive API key never appears in page HTML, client JS or network requests from the browser
 - [ ] Contact form sends an email to the business; spam submissions (honeypot filled) are silently dropped
 - [ ] Site works well on a 375px-wide screen
 - [ ] Lighthouse scores ≥ 95 on mobile
@@ -195,7 +198,7 @@ Create `OWNER_GUIDE.md`: a plain-English, one-page guide for the business owner 
 1. Scaffold Astro + Tailwind + Vercel adapter, base layout, header/footer
 2. Static pages with placeholder content and design system
 3. Prices: fallback JSON → CSV fetch + validation + cache
-4. Gallery: fallback JSON → Behold fetch + cache + lightbox
+4. Gallery: fallback JSON → Google Drive listing + resized image route + cache + lightbox
 5. Contact form + API route + Resend + Turnstile
 6. SEO, JSON-LD, sitemap
 7. Accessibility/performance pass, `OWNER_GUIDE.md`, README with deploy steps
