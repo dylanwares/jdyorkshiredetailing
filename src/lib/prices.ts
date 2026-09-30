@@ -7,9 +7,8 @@ import { getCache, getStale, setCache } from './cache';
 export interface PriceService {
   service: string;
   description: string;
-  small: number | null;
-  medium: number | null;
-  large: number | null;
+  /** null = no price set; shown as "Contact for quote". */
+  price: number | null;
   order: number;
 }
 
@@ -26,7 +25,7 @@ const FETCH_TIMEOUT_MS = 5000;
 
 const fallback = fallbackData as PriceCategory[];
 
-// "£35", "35" and " 35 " are all fine; blank means "not offered".
+// "£35", "35" and " 35 " are all fine; blank means "contact for quote".
 const priceCell = z
   .string()
   .default('')
@@ -45,9 +44,7 @@ const rowSchema = z.object({
   category: z.string().default('').transform((v) => v.trim() || 'Other'),
   service: z.string().default('').transform((v) => v.trim()).pipe(z.string().min(1, 'missing service')),
   description: z.string().default('').transform((v) => v.trim()),
-  small: priceCell,
-  medium: priceCell,
-  large: priceCell,
+  price: priceCell,
   active: z.string().default('').transform((v) => v.trim().toUpperCase() === 'TRUE'),
   order: z
     .string()
