@@ -21,19 +21,21 @@ const reasons = [
   description="Mobile car detailing in Barnsley and across South Yorkshire. Valets, machine polishing and ceramic coating brought to your door."
 >
   <section class="relative isolate flex min-h-[85svh] items-end overflow-hidden md:items-center">
-    <video
-      id="hero-video"
-      class="absolute inset-x-0 top-0 -z-20 h-[55%] w-full object-cover object-[55%_center] transition-opacity duration-1000 ease-in-out md:inset-0 md:h-full"
-      poster="/videos/hero-poster.jpg"
-      autoplay
-      muted
-      loop
-      playsinline
-      preload="metadata"
-      aria-hidden="true"
-    ></video>
-    <!-- Mobile: video sits in the top of the hero and fades to solid ink; desktop: left-to-right darkening -->
-    <div class="absolute inset-0 -z-10 bg-gradient-to-b from-ink/50 via-ink/60 via-35% to-ink to-55% md:bg-gradient-to-r md:from-ink/95 md:via-ink/75 md:via-50% md:to-ink/50 md:to-100%"></div>
+    <div id="hero-bg" class="absolute inset-0 -z-10 will-change-transform">
+      <video
+        id="hero-video"
+        class="absolute inset-x-0 top-0 h-[55%] w-full object-cover object-[55%_center] transition-opacity duration-1000 ease-in-out md:inset-0 md:h-full"
+        poster="/videos/hero-poster.jpg"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        aria-hidden="true"
+      ></video>
+      <!-- Mobile: video sits in the top of the hero and fades to solid ink; desktop: left-to-right darkening -->
+      <div class="absolute inset-0 bg-gradient-to-b from-ink/50 via-ink/60 via-35% to-ink to-55% md:bg-gradient-to-r md:from-ink/95 md:via-ink/75 md:via-50% md:to-ink/50 md:to-100%"></div>
+    </div>
     <div class="absolute inset-x-0 bottom-0 -z-10 h-32 bg-gradient-to-t from-ink to-transparent"></div>
     <div class="container-page pb-14 pt-20 md:py-20">
       <p class="eyebrow">{site.serviceArea}</p>
@@ -163,5 +165,35 @@ const reasons = [
         video.play().catch(() => {});
       });
     }
+  }
+
+  // Parallax + fade: the hero background drifts at a fraction of the scroll speed and fades
+  // out as the visitor scrolls down, until it has disappeared.
+  const heroBg = document.querySelector<HTMLElement>('#hero-bg');
+  if (heroBg && !reduceMotion) {
+    const PARALLAX = 0.4; // 0 = pinned to the page, 1 = scrolls normally
+    const hero = heroBg.parentElement as HTMLElement;
+    let ticking = false;
+
+    const update = () => {
+      ticking = false;
+      const y = window.scrollY;
+      const height = hero.offsetHeight;
+      if (y > height) return;
+      heroBg.style.transform = `translate3d(0, ${y * PARALLAX}px, 0)`;
+      heroBg.style.opacity = String(Math.max(0, 1 - y / (height * 0.85)));
+    };
+
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true },
+    );
+    update();
   }
 </script>
