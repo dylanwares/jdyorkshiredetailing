@@ -1,0 +1,16 @@
+---
+// Stand-in for real photography until supplied. Replace with <Image /> later.
+interface Props {
+  label?: string;
+  class?: string;
+}
+const { label = 'Photo coming soon', class: className = '' } = Astro.props;
+---
+
+<div
+  role="img"
+  aria-label={label}
+  class:list={['flex items-center justify-center bg-gradient-to-br from-surface-2 to-surface text-xs uppercase tracking-widest text-muted', className]}
+>
+  {label}
+</div>

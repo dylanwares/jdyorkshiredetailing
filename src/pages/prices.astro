@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import PriceTable from '../components/PriceTable.astro';
+import CTA from '../components/CTA.astro';
+---
+
+<BaseLayout title="Prices" description="Mobile car detailing prices in Barnsley and South Yorkshire: valets, machine polishing and ceramic coating.">
+  <PageHeader eyebrow="Prices" title="Simple, clear pricing" intro="Choose a service and find your vehicle size. Placeholder prices shown for now." />
+  <div class="container-page py-14"><PriceTable /></div>
+  <CTA />
+</BaseLayout>

@@ -1,0 +1,32 @@
+---
+import { nav, site } from '../data/site';
+---
+
+<footer class="border-t border-line bg-surface">
+  <div class="container-page grid gap-10 py-12 md:grid-cols-3">
+    <div>
+      <p class="font-display text-lg font-bold uppercase">{site.name}</p>
+      <p class="mt-3 text-sm text-muted">{site.tagline}. {site.serviceArea}.</p>
+    </div>
+    <nav aria-label="Footer">
+      <p class="eyebrow mb-3">Explore</p>
+      <ul class="space-y-2 text-sm">
+        {nav.map((item) => <li><a href={item.href} class="text-slate-300 hover:text-brand">{item.label}</a></li>)}
+      </ul>
+    </nav>
+    <div>
+      <p class="eyebrow mb-3">Get in touch</p>
+      <ul class="space-y-2 text-sm text-slate-300">
+        <li><a href={site.phoneHref} class="hover:text-brand">{site.phone}</a></li>
+        <li><a href={`mailto:${site.email}`} class="hover:text-brand">{site.email}</a></li>
+        <li>{site.hours}</li>
+        <li>
+          <a href={site.instagramUrl} target="_blank" rel="noopener" class="hover:text-brand">Instagram @{site.instagramHandle}</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-line py-5 text-center text-xs text-muted">
+    © {new Date().getFullYear()} {site.name}. All rights reserved.
+  </div>
+</footer>

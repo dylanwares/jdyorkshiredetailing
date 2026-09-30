@@ -1,0 +1,16 @@
+---
+import { site } from '../data/site';
+---
+
+<section class="border-t border-line bg-surface">
+  <div class="container-page flex flex-col items-start justify-between gap-6 py-14 md:flex-row md:items-center">
+    <div>
+      <h2 class="text-3xl sm:text-4xl">Ready for a showroom finish?</h2>
+      <p class="mt-2 text-muted">Tell us about your car and we’ll come to you. {site.serviceArea}.</p>
+    </div>
+    <div class="flex flex-wrap gap-3">
+      <a href="/contact" class="btn-primary">Get a quote</a>
+      <a href={site.phoneHref} class="btn-outline">Call {site.phone}</a>
+    </div>
+  </div>
+</section>

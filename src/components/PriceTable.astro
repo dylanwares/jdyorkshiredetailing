@@ -1,0 +1,44 @@
+---
+import prices from '../data/prices.fallback.json';
+
+const fmt = (n: number | null) => (n === null ? '—' : `£${n}`);
+const categories = prices.map((c) => ({
+  ...c,
+  services: [...c.services].sort((a, b) => a.order - b.order),
+}));
+---
+
+<div class="space-y-14">
+  {
+    categories.map((cat) => (
+      <section aria-labelledby={`cat-${cat.category}`}>
+        <h2 id={`cat-${cat.category}`} class="border-l-4 border-brand pl-4 text-2xl sm:text-3xl">{cat.category}</h2>
+        <div class="mt-6 hidden grid-cols-[1fr_5rem_5rem_5rem] gap-4 border-b border-line pb-2 text-xs uppercase tracking-widest text-muted md:grid">
+          <span>Service</span><span class="text-right">Small</span><span class="text-right">Medium</span><span class="text-right">Large</span>
+        </div>
+        <ul>
+          {cat.services.map((s) => (
+            <li class="grid gap-x-4 gap-y-3 border-b border-line py-5 md:grid-cols-[1fr_5rem_5rem_5rem] md:items-center">
+              <div>
+                <h3 class="text-lg normal-case">{s.service}</h3>
+                {s.description && <p class="mt-1 text-sm text-muted">{s.description}</p>}
+              </div>
+              <dl class="grid grid-cols-3 gap-2 md:contents">
+                {(['small', 'medium', 'large'] as const).map((size) => (
+                  <div class="bg-surface px-3 py-2 md:bg-transparent md:p-0 md:text-right">
+                    <dt class="text-xs uppercase tracking-widest text-muted md:sr-only">{size}</dt>
+                    <dd class="font-display text-lg font-bold text-brand">{fmt(s[size])}</dd>
+                  </div>
+                ))}
+              </dl>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+  <p class="text-sm text-muted">
+    Small = hatchbacks &amp; city cars · Medium = saloons &amp; estates · Large = vans &amp; 4x4s.
+    Prices are a guide — final quote depends on vehicle condition.
+  </p>
+</div>

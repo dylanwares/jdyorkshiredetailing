@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Placeholder from '../components/Placeholder.astro';
+import CTA from '../components/CTA.astro';
+import { site } from '../data/site';
+---
+
+<BaseLayout title="Our Work" description="See recent mobile car detailing results from Jack Daniel’s Yorkshire Detailing Company.">
+  <PageHeader eyebrow="Our work" title="Recent results" intro="A look at recent jobs. Photos will update automatically from our Instagram." />
+  <div class="container-page py-14">
+    <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+      {Array.from({ length: 18 }, (_, i) => <Placeholder label={`Gallery photo ${i + 1}`} class="aspect-square" />)}
+    </div>
+    <div class="mt-10 text-center">
+      <a href={site.instagramUrl} target="_blank" rel="noopener" class="btn-primary">Follow us on Instagram</a>
+    </div>
+  </div>
+  <CTA />
+</BaseLayout>

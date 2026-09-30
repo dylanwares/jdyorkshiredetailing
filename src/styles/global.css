@@ -1,1 +1,48 @@
 @import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/space-grotesk";
+
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk Variable", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand: #3bb3f9;
+  --color-brand-dark: #1f8fd4;
+  --color-ink: #0a0e14;
+  --color-surface: #121821;
+  --color-surface-2: #1a222e;
+  --color-line: #263142;
+  --color-muted: #9aa7b8;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background: var(--color-ink);
+  }
+  body {
+    @apply bg-ink font-sans text-slate-100 antialiased;
+  }
+  h1, h2, h3 {
+    @apply font-display font-bold uppercase tracking-tight;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand;
+  }
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 px-6 py-3 font-display text-sm font-bold uppercase tracking-wider transition-colors;
+}
+@utility btn-primary {
+  @apply btn bg-brand text-ink hover:bg-white;
+}
+@utility btn-outline {
+  @apply btn border border-white/30 text-white hover:border-brand hover:text-brand;
+}
+@utility eyebrow {
+  @apply font-display text-xs font-semibold uppercase tracking-[0.25em] text-brand;
+}
+@utility container-page {
+  @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
+}

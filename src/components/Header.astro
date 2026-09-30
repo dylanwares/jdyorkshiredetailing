@@ -1,0 +1,70 @@
+---
+import { Image } from 'astro:assets';
+import logoMark from '../assets/logo-mark.png';
+import { nav, site } from '../data/site';
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+---
+
+<header class="sticky top-0 z-50 border-b border-line bg-ink/90 backdrop-blur">
+  <div class="container-page flex h-16 items-center justify-between gap-4">
+    <a href="/" class="flex items-center gap-3" aria-label={`${site.name} – home`}>
+      <Image src={logoMark} alt="" width={64} height={34} class="h-8 w-auto" />
+      <span class="font-display text-sm font-bold uppercase leading-tight tracking-wide">
+        Jack Daniel’s<br /><span class="text-brand">Yorkshire Detailing</span>
+      </span>
+    </a>
+
+    <nav aria-label="Main" class="hidden items-center gap-8 md:flex">
+      {
+        nav.map((item) => (
+          <a
+            href={item.href}
+            aria-current={path === item.href ? 'page' : undefined}
+            class="font-display text-sm font-semibold uppercase tracking-wider text-slate-300 transition-colors hover:text-brand aria-[current=page]:text-brand"
+          >
+            {item.label}
+          </a>
+        ))
+      }
+      <a href={site.phoneHref} class="btn-primary !py-2">{site.phone}</a>
+    </nav>
+
+    <details class="group relative md:hidden">
+      <summary
+        class="flex h-11 w-11 cursor-pointer list-none items-center justify-center border border-line [&::-webkit-details-marker]:hidden"
+        aria-label="Menu"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path class="group-open:hidden" d="M3 6h18M3 12h18M3 18h18"></path>
+          <path class="hidden group-open:block" d="M5 5l14 14M19 5L5 19"></path>
+        </svg>
+      </summary>
+      <nav aria-label="Mobile" class="fixed inset-x-0 top-16 border-b border-line bg-ink px-5 py-4">
+        <ul class="flex flex-col">
+          {
+            nav.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  aria-current={path === item.href ? 'page' : undefined}
+                  class="block border-b border-line py-4 font-display text-lg font-semibold uppercase tracking-wider aria-[current=page]:text-brand"
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </details>
+  </div>
+</header>
+
+<!-- Persistent click-to-call on mobile -->
+<div class="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-ink/95 p-2 backdrop-blur md:hidden">
+  <a href={site.phoneHref} class="btn-primary w-full">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 006.6 6.6l2.2-2.2a1 1 0 011-.25 11.4 11.4 0 003.6.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1z"/></svg>
+    Call now · {site.phone}
+  </a>
+</div>

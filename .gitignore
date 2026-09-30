@@ -30,3 +30,8 @@ pnpm-debug.log*
 
 # original hero GIF is too large for git (>100 MB); the site uses the MP4
 assets/hero bg.gif
+
+# extra hero source clips (compressed versions live in public/videos)
+assets/hero bg2.mp4
+assets/hero bg3.mp4
+assets/hero bg 4.mp4
