@@ -2,23 +2,58 @@
   {
     "category": "Valets",
     "services": [
-      { "service": "Mini Valet", "description": "Exterior wash, wheels and tyres, interior vacuum and wipe down.", "small": 35, "medium": 40, "large": 50, "order": 1 },
-      { "service": "Full Valet", "description": "Everything in the Mini Valet plus deep interior clean, windows and dressing.", "small": 70, "medium": 80, "large": 95, "order": 2 },
-      { "service": "Premium Valet", "description": "Full valet with clay bar decontamination and hand wax.", "small": 120, "medium": 135, "large": 160, "order": 3 }
+      {
+        "service": "Mini Valet",
+        "description": "Exterior wash, wheels and tyres, interior vacuum and wipe down.",
+        "price": 35,
+        "order": 1
+      },
+      {
+        "service": "Full Valet",
+        "description": "Everything in the Mini Valet plus deep interior clean, windows and dressing.",
+        "price": 70,
+        "order": 2
+      },
+      {
+        "service": "Premium Valet",
+        "description": "Full valet with clay bar decontamination and hand wax.",
+        "price": 120,
+        "order": 3
+      }
     ]
   },
   {
     "category": "Protection",
     "services": [
-      { "service": "Machine Polish", "description": "Single-stage polish to remove light swirls and restore gloss.", "small": 150, "medium": 175, "large": 200, "order": 1 },
-      { "service": "Ceramic Coating", "description": "Long-lasting gloss and hydrophobic protection. Includes prep polish.", "small": 350, "medium": 400, "large": 450, "order": 2 }
+      {
+        "service": "Machine Polish",
+        "description": "Single-stage polish to remove light swirls and restore gloss.",
+        "price": 150,
+        "order": 1
+      },
+      {
+        "service": "Ceramic Coating",
+        "description": "Long-lasting gloss and hydrophobic protection. Includes prep polish.",
+        "price": 350,
+        "order": 2
+      }
     ]
   },
   {
     "category": "Extras",
     "services": [
-      { "service": "Pet Hair Removal", "description": "Thorough removal of embedded pet hair.", "small": 20, "medium": 25, "large": 30, "order": 1 },
-      { "service": "Headlight Restoration", "description": "Restore cloudy or yellowed headlights.", "small": 40, "medium": 40, "large": null, "order": 2 }
+      {
+        "service": "Pet Hair Removal",
+        "description": "Thorough removal of embedded pet hair.",
+        "price": 20,
+        "order": 1
+      },
+      {
+        "service": "Headlight Restoration",
+        "description": "Restore cloudy or yellowed headlights.",
+        "price": null,
+        "order": 2
+      }
     ]
   }
 ]

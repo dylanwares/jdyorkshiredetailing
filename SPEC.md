@@ -61,9 +61,7 @@ Global: sticky header with nav + "Call now" button on mobile, footer with contac
 | `category` | text | `Valets` | Groups services into sections |
 | `service` | text | `Mini Valet` | |
 | `description` | text | `Exterior wash, interior hoover…` | Optional |
-| `small` | number | `35` | Price for small cars; blank = not offered |
-| `medium` | number | `40` | |
-| `large` | number | `50` | Vans / 4x4s |
+| `price` | number | `35` | One price per service, shown exactly as entered (as `£35`); blank = "Contact for quote" |
 | `active` | TRUE/FALSE | `TRUE` | FALSE hides the row |
 | `order` | number | `1` | Sort order within category |
 
@@ -73,12 +71,12 @@ The sheet is published via *File → Share → Publish to web → `Prices` tab �
 
 - `src/lib/prices.ts`
   - Fetch CSV server-side, parse with `papaparse`.
-  - Validate each row with `zod`: skip rows with missing `service`, non-numeric prices, or `active !== TRUE`. Log skipped rows, never crash.
+  - Validate each row with `zod`: skip rows with missing `service`, a non-numeric `price`, or `active !== TRUE`. Log skipped rows, never crash.
   - Group by `category`, sort by `order`.
   - **In-memory cache for 10 minutes.**
   - **Fallback:** if fetch/parse fails or returns zero valid rows, use `src/data/prices.fallback.json` (same shape). Page must never render empty.
 - `/prices` is server-rendered (`export const prerender = false`) and sets `Cache-Control: s-maxage=600, stale-while-revalidate=3600`.
-- Display: one section per category, responsive table/cards showing Small / Medium / Large columns. Blank price → "—". Prices formatted as `£35`. Include a note: "Prices are a guide — final quote depends on vehicle condition."
+- Display: one section per category, a responsive list with the service name and description on the left and a single price on the right. Blank price → "Contact for quote". Prices formatted as `£35`, exactly as in the sheet (no "From"). Include a note: "Prices are a guide — final quote depends on vehicle condition."
 
 ## 5. Gallery — Google Drive folder
 

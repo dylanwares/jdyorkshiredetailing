@@ -1,0 +1,9 @@
+category,service,description,price,active,order
+Valets,Mini Valet,"Exterior wash, wheels and tyres, interior vacuum and wipe down.",35,TRUE,1
+Valets,Full Valet,"Everything in the Mini Valet plus deep interior clean, windows and dressing.",70,TRUE,2
+Valets,Premium Valet,Full valet with clay bar decontamination and hand wax.,120,TRUE,3
+Protection,Machine Polish,Single-stage polish to remove light swirls and restore gloss.,150,TRUE,1
+Protection,Ceramic Coating,Long-lasting gloss and hydrophobic protection. Includes prep polish.,350,TRUE,2
+Extras,Pet Hair Removal,Thorough removal of embedded pet hair.,20,TRUE,1
+Extras,Headlight Restoration,Restore cloudy or yellowed headlights.,,TRUE,2
+Extras,Example Hidden Service,Set active to FALSE and this row is hidden from the site.,10,FALSE,3
