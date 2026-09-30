@@ -20,10 +20,10 @@ const reasons = [
   title={site.name}
   description="Mobile car detailing in Barnsley and across South Yorkshire. Valets, machine polishing and ceramic coating brought to your door."
 >
-  <section class="relative isolate flex min-h-[85svh] items-center overflow-hidden">
+  <section class="relative isolate flex min-h-[85svh] items-end overflow-hidden md:items-center">
     <video
       id="hero-video"
-      class="absolute inset-0 -z-20 h-full w-full object-cover transition-opacity duration-1000 ease-in-out"
+      class="absolute inset-x-0 top-0 -z-20 h-[55%] w-full object-cover object-[55%_center] transition-opacity duration-1000 ease-in-out md:inset-0 md:h-full"
       poster="/videos/hero-poster.jpg"
       autoplay
       muted
@@ -32,9 +32,10 @@ const reasons = [
       preload="metadata"
       aria-hidden="true"
     ></video>
-    <div class="absolute inset-0 -z-10 bg-gradient-to-r from-ink/95 via-ink/75 to-ink/50"></div>
+    <!-- Mobile: video sits in the top of the hero and fades to solid ink; desktop: left-to-right darkening -->
+    <div class="absolute inset-0 -z-10 bg-gradient-to-b from-ink/50 via-ink/60 via-35% to-ink to-55% md:bg-gradient-to-r md:from-ink/95 md:via-ink/75 md:via-50% md:to-ink/50 md:to-100%"></div>
     <div class="absolute inset-x-0 bottom-0 -z-10 h-32 bg-gradient-to-t from-ink to-transparent"></div>
-    <div class="container-page py-20">
+    <div class="container-page pb-14 pt-20 md:py-20">
       <p class="eyebrow">{site.serviceArea}</p>
       <h1 class="mt-4 max-w-3xl text-5xl leading-[0.95] sm:text-7xl">Showroom shine, <span class="text-brand">at your door</span></h1>
       <p class="mt-6 max-w-xl text-lg text-slate-200">Professional mobile car detailing. Tell us where you are and we’ll bring everything needed to make your car look its best.</p>
