@@ -1,0 +1,77 @@
+---
+// One shared lightbox for any element with [data-lightbox] (data-full = large image URL,
+// data-alt = alt text). Uses a native <dialog>, so Esc and focus trapping come for free.
+---
+
+<dialog
+  id="lightbox"
+  aria-label="Photo viewer"
+  class="m-0 h-full max-h-none w-full max-w-none bg-transparent p-0 text-white backdrop:bg-black/90"
+>
+  <div class="flex h-full w-full items-center justify-center p-4 sm:p-10" data-lightbox-backdrop>
+    <img id="lightbox-img" alt="" class="max-h-full max-w-full object-contain" />
+  </div>
+  <button type="button" id="lightbox-close" class="absolute right-3 top-3 flex h-12 w-12 items-center justify-center bg-ink/70 text-2xl hover:text-brand" aria-label="Close">×</button>
+  <button type="button" id="lightbox-prev" class="absolute left-2 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center bg-ink/70 text-2xl hover:text-brand" aria-label="Previous photo">‹</button>
+  <button type="button" id="lightbox-next" class="absolute right-2 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center bg-ink/70 text-2xl hover:text-brand" aria-label="Next photo">›</button>
+  <p id="lightbox-count" class="absolute inset-x-0 bottom-3 text-center text-sm text-slate-300" aria-live="polite"></p>
+</dialog>
+
+<style is:global>
+  html:has(dialog#lightbox[open]) {
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('#lightbox');
+  const img = document.querySelector<HTMLImageElement>('#lightbox-img');
+  const count = document.querySelector<HTMLElement>('#lightbox-count');
+  const prev = document.querySelector<HTMLElement>('#lightbox-prev');
+  const next = document.querySelector<HTMLElement>('#lightbox-next');
+
+  if (dialog && img && count && prev && next) {
+    let items: HTMLElement[] = [];
+    let index = 0;
+    let opener: HTMLElement | null = null;
+
+    const show = (i: number) => {
+      index = (i + items.length) % items.length;
+      const item = items[index];
+      img.src = item.dataset.full ?? '';
+      img.alt = item.dataset.alt ?? '';
+      count.textContent = `${index + 1} / ${items.length}`;
+      // Warm the next photo so arrowing through feels instant.
+      if (items.length > 1) new Image().src = items[(index + 1) % items.length].dataset.full ?? '';
+    };
+
+    document.addEventListener('click', (event) => {
+      const target = (event.target as Element).closest<HTMLElement>('[data-lightbox]');
+      if (!target) return;
+      items = [...document.querySelectorAll<HTMLElement>('[data-lightbox]')];
+      opener = target;
+      prev.hidden = next.hidden = items.length < 2;
+      show(items.indexOf(target));
+      dialog.showModal();
+    });
+
+    prev.addEventListener('click', () => show(index - 1));
+    next.addEventListener('click', () => show(index + 1));
+    document.querySelector('#lightbox-close')?.addEventListener('click', () => dialog.close());
+
+    // Clicking the dark area around the photo closes it.
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog || (event.target as HTMLElement).hasAttribute('data-lightbox-backdrop')) dialog.close();
+    });
+
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') show(index - 1);
+      if (event.key === 'ArrowRight') show(index + 1);
+    });
+
+    dialog.addEventListener('close', () => {
+      img.removeAttribute('src');
+      opener?.focus();
+    });
+  }
+</script>

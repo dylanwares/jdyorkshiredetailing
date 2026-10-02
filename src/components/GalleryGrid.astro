@@ -1,0 +1,63 @@
+---
+import { getImage } from 'astro:assets';
+import type { GalleryImage } from '../lib/gallery';
+import Placeholder from './Placeholder.astro';
+
+interface Props {
+  images: GalleryImage[];
+}
+
+const WIDTHS = [480, 960, 1600] as const;
+
+// Build thumbnail srcset and full-size URL for each photo: Drive photos go through the
+// resize route, bundled fallback photos through Astro's image service.
+const tiles = await Promise.all(
+  Astro.props.images.map(async (image) => {
+    if (image.source === 'drive') {
+      const url = (w: number) => `/api/gallery/${image.id}?w=${w}`;
+      return {
+        src: url(960),
+        srcset: `${url(480)} 480w, ${url(960)} 960w`,
+        full: url(1600),
+      };
+    }
+    const [small, medium, large] = await Promise.all(
+      WIDTHS.map((width) => getImage({ src: image.src, width, format: 'webp' })),
+    );
+    return { src: medium.src, srcset: `${small.src} 480w, ${medium.src} 960w`, full: large.src };
+  }),
+);
+---
+
+{
+  tiles.length === 0 ? (
+    <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+      {Array.from({ length: 6 }, () => <Placeholder label="Photos coming soon" class="aspect-square" />)}
+    </div>
+  ) : (
+    <ul class="grid grid-cols-2 gap-3 md:grid-cols-3">
+      {tiles.map((tile, i) => (
+        <li>
+          <button
+            type="button"
+            data-lightbox
+            data-full={tile.full}
+            data-alt={`Detailing work, photo ${i + 1}`}
+            class="group block aspect-square w-full overflow-hidden bg-surface"
+            aria-label={`View photo ${i + 1} larger`}
+          >
+            <img
+              src={tile.src}
+              srcset={tile.srcset}
+              sizes="(min-width: 1152px) 384px, (min-width: 768px) 33vw, 50vw"
+              alt={`Detailing work, photo ${i + 1}`}
+              loading={i < 6 ? 'eager' : 'lazy'}
+              decoding="async"
+              class="h-full w-full rounded-sm object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
+}

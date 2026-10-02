@@ -20,17 +20,9 @@ export default defineConfig({
   env: {
     schema: {
       PRICES_CSV_URL: envField.string({ context: 'server', access: 'secret', optional: true }),
+      GOOGLE_DRIVE_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
+      GOOGLE_DRIVE_FOLDER_ID: envField.string({ context: 'server', access: 'secret', optional: true }),
     },
-  },
-
-  image: {
-    // Allow Astro <Image /> to optimise remote gallery images from Behold / Instagram.
-    remotePatterns: [
-      { protocol: 'https', hostname: 'behold.pictures' },
-      { protocol: 'https', hostname: '**.behold.pictures' },
-      { protocol: 'https', hostname: '**.cdninstagram.com' },
-      { protocol: 'https', hostname: '**.fbcdn.net' },
-    ],
   },
 
   vite: {

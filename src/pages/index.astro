@@ -1,8 +1,17 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import GalleryGrid from '../components/GalleryGrid.astro';
 import Placeholder from '../components/Placeholder.astro';
+import Lightbox from '../components/Lightbox.astro';
 import CTA from '../components/CTA.astro';
+import { getGalleryImages } from '../lib/gallery';
 import { site } from '../data/site';
+
+// Server-rendered so the gallery preview follows the Drive folder without a redeploy.
+export const prerender = false;
+
+const galleryImages = (await getGalleryImages()).slice(0, 6);
+Astro.response.headers.set('Cache-Control', 's-maxage=1800, stale-while-revalidate=3600');
 
 const services = [
   { name: 'Valets', text: 'From a quick refresh to a full interior and exterior deep clean.' },
@@ -54,8 +63,8 @@ const reasons = [
       <h2 class="text-3xl sm:text-4xl">Our work</h2>
       <a href="/our-work" class="btn-outline">View gallery</a>
     </div>
-    <div class="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3">
-      {Array.from({ length: 6 }, (_, i) => <Placeholder label={`Gallery photo ${i + 1}`} class="aspect-square" />)}
+    <div class="mt-8">
+      <GalleryGrid images={galleryImages} />
     </div>
   </section>
 
@@ -105,6 +114,7 @@ const reasons = [
   </section>
 
   <CTA />
+  <Lightbox />
 </BaseLayout>
 
 <script>

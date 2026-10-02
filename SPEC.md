@@ -80,15 +80,15 @@ The sheet is published via *File → Share → Publish to web → `Prices` tab �
 
 ## 5. Gallery — Google Drive folder
 
-The client uploads photos to a Google Drive folder (shared as "anyone with the link can view"). Every image in that folder appears on the site, newest first. Images only — videos and other file types are ignored. The price sheet (§4) can live in the same folder; it is a Google Sheet, so it is ignored by the image filter.
+The client uploads photos to a Google Drive folder (shared as "anyone with the link can view"). Every image in that folder appears on the site, newest first. Images only (JPEG, PNG or WebP) — videos and other file types are ignored. HEIC photos aren't supported, so iPhone users should upload JPEGs (or set the camera to "Most Compatible"). The price sheet (§4) can live in the same folder; it is a Google Sheet, so it is ignored by the image filter.
 
 - Env vars: `GOOGLE_DRIVE_KEY` (Google Cloud API key with the Drive API enabled, read-only use) and `GOOGLE_DRIVE_FOLDER_ID` (the ID from the folder's URL). Both are server-side only.
 - `src/lib/gallery.ts`
-  - List the folder with the Drive API (`files.list`, query `'<folderId>' in parents and mimeType contains 'image/' and trashed = false`, ordered by `createdTime desc`, paginated) and map to `{ id, name, width, height, createdTime }`.
+  - List the folder with the Drive API (`files.list`, restricted to JPEG/PNG/WebP, not trashed, ordered by `createdTime desc`, paginated) and map to `{ id, name, thumbnail }`.
   - No hashtag or caption filter: every image in the folder is shown.
-  - Limit: all images on `/our-work`, latest 6 on home.
-  - Cache the listing 30 minutes (in memory); on failure, or when the env vars are missing, use `src/data/gallery.fallback.json` pointing at local images in `src/assets/gallery/`.
-- Image route (e.g. `src/pages/api/gallery/[id].ts`): fetches the file from Drive server-side, resizes and compresses it (client photos can be 5–10MB), and returns it with long `Cache-Control` headers. The API key is never exposed to the browser. Only IDs that appear in the current folder listing are served.
+  - Limit: all images on `/our-work`, latest 6 on home. Both pages are server-rendered with `Cache-Control: s-maxage=1800, stale-while-revalidate=3600`.
+  - Cache the listing 30 minutes (in memory); on failure, or when the env vars are missing, serve the last good list, then the bundled fallback photos in `src/assets/gallery-fallback/` (resized copies, ~1600px wide, kept small because they ship with the deployment).
+- Image route `src/pages/api/gallery/[id].ts`: fetches Drive's pre-sized thumbnail (about 0.5s) — or the original if the thumbnail is unavailable — converts it to WebP at 480, 960 or 1600px wide (client photos are 4–6MB), and returns it with long `Cache-Control` headers. The API key is never exposed to the browser. Only IDs that appear in the current folder listing are served.
 - Display: responsive masonry/grid, lazy-loaded, rounded corners, click opens a simple lightbox (no heavy library — a small custom component or `<dialog>`). "Follow us on Instagram" button beneath (the business still has an Instagram; it is just no longer the gallery source).
 
 ## 6. Contact Form
@@ -163,8 +163,8 @@ src/
   components/   Header, Footer, Hero, PriceTable, GalleryGrid, Lightbox, ContactForm, CTA
   layouts/      BaseLayout.astro
   lib/          prices.ts, gallery.ts, cache.ts, validation.ts
-  data/         prices.fallback.json, gallery.fallback.json
-  assets/       logo, hero image, gallery fallbacks
+  data/         prices.fallback.json
+  assets/       logo, gallery-fallback/ (small resized photos)
   pages/        index, prices, our-work, contact, 404, api/contact.ts
 ```
 
