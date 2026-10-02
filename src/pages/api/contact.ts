@@ -56,16 +56,13 @@ export const POST: APIRoute = async ({ request, redirect, clientAddress }) => {
     return respond(429, { ok: false, message: `You've sent a few enquiries already. Please try again later, or call us on ${site.phone}.` }, 'ratelimit');
   }
 
-  // With Turnstile configured every submission needs a valid token. (It's skipped only when
-  // no secret is set, which is local development.)
+  // Turnstile is optional: when its keys are set every submission needs a valid token; when
+  // they aren't, the honeypot and rate limit are the only spam checks.
   if (turnstileEnabled) {
     const token = String(form.get('cf-turnstile-response') ?? '');
     if (!(await verifyTurnstile(token, ip === 'unknown' ? undefined : ip))) {
       return respond(400, { ok: false, message: `We couldn't verify you're human. Please try again, or call us on ${site.phone}.` }, 'verify');
     }
-  } else if (!import.meta.env.DEV) {
-    console.error('[contact] TURNSTILE_SECRET_KEY is not set; refusing submissions in production');
-    return respond(503, { ok: false, message: `The enquiry form is temporarily unavailable. ${callUs}` });
   }
 
   const result = await notifyEnquiry(parsed.enquiry);
