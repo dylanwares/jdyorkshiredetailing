@@ -31,7 +31,7 @@ Logo is placed at assets/logo.JPG
 | Hosting | Vercel (`@astrojs/vercel` adapter) |
 | Prices source | Google Sheet published to web as CSV |
 | Gallery source | Google Drive folder (images only), read via the Drive API |
-| Contact email | Resend (via Astro API route) |
+| Contact notifications | Resend email + Telegram bot push (via Astro API route) |
 | Spam protection | Honeypot field + Cloudflare Turnstile |
 | Images | Astro `<Image />` for local assets; gallery images are fetched from Drive server-side and served resized through a site route (the API key never reaches the browser) |
 
@@ -106,9 +106,11 @@ Fields:
 
 Behaviour:
 - Submits via `fetch` to `POST /api/contact`.
-- Server validates with `zod`, checks honeypot and Turnstile token, then sends an email via Resend to `CONTACT_TO_EMAIL` with a clear subject: `New enquiry — {service} — {postcode}`, and `reply-to` set to the customer's email if provided.
-- Shows inline success/error states; the form stays usable without JS (progressive enhancement with a normal form POST fallback and a redirect to `/contact?sent=1`).
-- Basic rate limiting per IP (simple in-memory limiter is acceptable).
+- Server (`src/pages/api/contact.ts`) validates with `zod` (`src/lib/validation.ts`), checks the honeypot and (if enabled) the Turnstile token, then delivers the enquiry through every configured channel (`src/lib/notify.ts`): an email via Resend to `CONTACT_TO_EMAIL` with a clear subject, `New enquiry — {service} — {postcode}`, and `reply-to` set to the customer's email if provided; and an instant push message through a Telegram bot to the client's phone. An enquiry counts as delivered if at least one channel succeeds; if all fail the customer is told to call instead, and the error is logged (without customer details).
+- Shows inline success/error states; the form falls back to a normal form POST with a redirect to `/contact?sent=1` (or `/contact?error=…`) when JavaScript is off. Turnstile is optional and off until its keys are set; it needs JavaScript, so once enabled, visitors without JS are shown the phone number instead. The contact page is server-rendered so it can show the confirmation and list the live services from the price sheet.
+- Basic rate limiting per IP: 5 valid submissions per 10 minutes (in-memory, best-effort on serverless). Invalid submissions don't count.
+- Turnstile is optional: without its keys the honeypot and rate limit are the only spam checks. Telegram is optional too; email alone is enough to run.
+- With no delivery channel configured, local development logs the enquiry to the terminal; in production the form refuses to pretend it sent.
 
 ## 7. Environment Variables
 
@@ -119,6 +121,8 @@ GOOGLE_DRIVE_FOLDER_ID=
 RESEND_API_KEY=
 CONTACT_TO_EMAIL=
 CONTACT_FROM_EMAIL=       # verified Resend sender on jdyorkshiredetailingcompany.com
+TELEGRAM_BOT_TOKEN=       # optional: instant push to the client's phone
+TELEGRAM_CHAT_ID=
 TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=
 ```
@@ -162,7 +166,7 @@ Make it different:
 src/
   components/   Header, Footer, Hero, PriceTable, GalleryGrid, Lightbox, ContactForm, CTA
   layouts/      BaseLayout.astro
-  lib/          prices.ts, gallery.ts, cache.ts, validation.ts
+  lib/          prices.ts, gallery.ts, cache.ts, validation.ts, notify.ts, turnstile.ts, rate-limit.ts
   data/         prices.fallback.json
   assets/       logo, gallery-fallback/ (small resized photos)
   pages/        index, prices, our-work, contact, 404, api/contact.ts

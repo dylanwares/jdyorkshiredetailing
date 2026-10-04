@@ -1,0 +1,139 @@
+---
+import { TURNSTILE_SITE_KEY } from 'astro:env/client';
+import { site } from '../data/site';
+
+interface Props {
+  services: string[];
+}
+
+const { services } = Astro.props;
+const field = 'mt-1 w-full border border-line bg-surface px-4 py-3 text-base text-white placeholder:text-muted aria-[invalid=true]:border-red-400';
+const label = 'block text-sm font-semibold';
+const error = 'mt-1 text-sm text-red-400';
+---
+
+<form id="contact-form" method="post" action="/api/contact" class="grid gap-5 sm:grid-cols-2" novalidate>
+  <div>
+    <label class={label} for="name">Name *</label>
+    <input class={field} id="name" name="name" required maxlength="100" autocomplete="name" aria-describedby="error-name" />
+    <p class={error} id="error-name" data-error-for="name" hidden></p>
+  </div>
+  <div>
+    <label class={label} for="phone">Phone *</label>
+    <input class={field} id="phone" name="phone" type="tel" required maxlength="30" autocomplete="tel" aria-describedby="error-phone" />
+    <p class={error} id="error-phone" data-error-for="phone" hidden></p>
+  </div>
+  <div>
+    <label class={label} for="email">Email</label>
+    <input class={field} id="email" name="email" type="email" maxlength="200" autocomplete="email" aria-describedby="error-email" />
+    <p class={error} id="error-email" data-error-for="email" hidden></p>
+  </div>
+  <div>
+    <label class={label} for="postcode">Postcode *</label>
+    <input class={field} id="postcode" name="postcode" required maxlength="10" autocomplete="postal-code" aria-describedby="error-postcode" />
+    <p class={error} id="error-postcode" data-error-for="postcode" hidden></p>
+  </div>
+  <div>
+    <label class={label} for="vehicle">Vehicle make / model</label>
+    <input class={field} id="vehicle" name="vehicle" maxlength="100" aria-describedby="error-vehicle" />
+    <p class={error} id="error-vehicle" data-error-for="vehicle" hidden></p>
+  </div>
+  <div>
+    <label class={label} for="service">Service interested in</label>
+    <select class={field} id="service" name="service">
+      <option value="">Not sure yet</option>
+      {services.map((s) => <option>{s}</option>)}
+    </select>
+  </div>
+  <div class="sm:col-span-2">
+    <label class={label} for="date">Preferred date</label>
+    <input class={field} id="date" name="date" type="date" aria-describedby="error-date" />
+    <p class={error} id="error-date" data-error-for="date" hidden></p>
+  </div>
+  <div class="sm:col-span-2">
+    <label class={label} for="message">Message</label>
+    <textarea class={field} id="message" name="message" rows="5" maxlength="2000" aria-describedby="error-message"></textarea>
+    <p class={error} id="error-message" data-error-for="message" hidden></p>
+  </div>
+
+  <!-- Honeypot: hidden from people, tempting to bots. -->
+  <div class="hidden" aria-hidden="true"><label>Leave this blank <input name="website" tabindex="-1" autocomplete="off" /></label></div>
+
+  {TURNSTILE_SITE_KEY && <div class="cf-turnstile sm:col-span-2" data-sitekey={TURNSTILE_SITE_KEY} data-theme="dark"></div>}
+
+  <div class="sm:col-span-2">
+    <button type="submit" class="btn-primary" id="contact-submit">Send enquiry</button>
+    <p id="contact-status" role="status" aria-live="polite" class="mt-4 text-sm" hidden></p>
+    {TURNSTILE_SITE_KEY && <noscript><p class="mt-4 text-sm text-muted">This form needs JavaScript to protect against spam. Please call us on {site.phone} instead.</p></noscript>}
+  </div>
+</form>
+
+{TURNSTILE_SITE_KEY && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('#contact-form');
+  const status = document.querySelector<HTMLElement>('#contact-status');
+  const submit = document.querySelector<HTMLButtonElement>('#contact-submit');
+
+  if (form && status && submit) {
+    const showStatus = (message: string, ok: boolean) => {
+      status.textContent = message;
+      status.className = `mt-4 text-sm ${ok ? 'text-brand' : 'text-red-400'}`;
+      status.hidden = false;
+    };
+
+    const clearErrors = () => {
+      form.querySelectorAll<HTMLElement>('[data-error-for]').forEach((el) => {
+        el.hidden = true;
+        el.textContent = '';
+      });
+      form.querySelectorAll('[aria-invalid]').forEach((el) => el.removeAttribute('aria-invalid'));
+      status.hidden = true;
+    };
+
+    const showFieldErrors = (errors: Record<string, string[] | undefined>) => {
+      let first: HTMLElement | null = null;
+      for (const [name, messages] of Object.entries(errors)) {
+        const el = form.querySelector<HTMLElement>(`[data-error-for="${name}"]`);
+        const input = form.querySelector<HTMLElement>(`[name="${name}"]`);
+        if (el && messages?.length) {
+          el.textContent = messages[0];
+          el.hidden = false;
+          input?.setAttribute('aria-invalid', 'true');
+          first ??= input;
+        }
+      }
+      first?.focus();
+    };
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearErrors();
+      submit.disabled = true;
+      submit.textContent = 'Sending…';
+
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { Accept: 'application/json' },
+        });
+        const result = (await response.json()) as { ok: boolean; message?: string; fieldErrors?: Record<string, string[] | undefined> };
+
+        if (result.ok) {
+          window.location.assign('/contact?sent=1');
+          return;
+        }
+        if (result.fieldErrors) showFieldErrors(result.fieldErrors);
+        showStatus(result.message ?? 'Something went wrong. Please try again.', false);
+      } catch {
+        showStatus('We couldn’t send your enquiry. Please check your connection and try again.', false);
+      }
+
+      // Turnstile tokens are single-use, so get a fresh one for the next attempt.
+      (window as unknown as { turnstile?: { reset: () => void } }).turnstile?.reset();
+      submit.disabled = false;
+      submit.textContent = 'Send enquiry';
+    });
+  }
+</script>

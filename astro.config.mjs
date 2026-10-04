@@ -22,6 +22,14 @@ export default defineConfig({
       PRICES_CSV_URL: envField.string({ context: 'server', access: 'secret', optional: true }),
       GOOGLE_DRIVE_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
       GOOGLE_DRIVE_FOLDER_ID: envField.string({ context: 'server', access: 'secret', optional: true }),
+      RESEND_API_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
+      CONTACT_TO_EMAIL: envField.string({ context: 'server', access: 'secret', optional: true }),
+      CONTACT_FROM_EMAIL: envField.string({ context: 'server', access: 'secret', optional: true }),
+      TURNSTILE_SECRET_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
+      TELEGRAM_BOT_TOKEN: envField.string({ context: 'server', access: 'secret', optional: true }),
+      TELEGRAM_CHAT_ID: envField.string({ context: 'server', access: 'secret', optional: true }),
+      // Public: the Turnstile widget needs the site key in the browser.
+      TURNSTILE_SITE_KEY: envField.string({ context: 'client', access: 'public', optional: true }),
     },
   },
 

@@ -1,36 +1,48 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
-import prices from '../data/prices.fallback.json';
+import ContactForm from '../components/ContactForm.astro';
+import { getPrices } from '../lib/prices';
 import { site } from '../data/site';
 
-const services = prices.flatMap((c) => c.services.map((s) => s.service));
-const field = 'mt-1 w-full border border-line bg-surface px-4 py-3 text-base text-white placeholder:text-muted';
-const label = 'block text-sm font-semibold';
+// Server-rendered so the service list follows the live price sheet and ?sent=1 can show a confirmation.
+export const prerender = false;
+
+const services = (await getPrices()).flatMap((c) => c.services.map((s) => s.service));
+const sent = Astro.url.searchParams.get('sent') === '1';
+const errorCode = Astro.url.searchParams.get('error');
+const errorMessages: Record<string, string> = {
+  invalid: 'Some details were missing or not valid. Please check the form and try again.',
+  verify: 'We couldn’t verify you’re human. Please try again.',
+  ratelimit: 'You’ve sent a few enquiries already. Please try again later.',
+  failed: 'Sorry, we couldn’t send your enquiry.',
+};
+Astro.response.headers.set('Cache-Control', 's-maxage=600, stale-while-revalidate=3600');
 ---
+
 
 <BaseLayout title="Contact" description="Get a quote for mobile car detailing in Barnsley and South Yorkshire.">
   <PageHeader eyebrow="Contact" title="Get a quote" intro="Tell us about your car and we’ll get back to you." />
   <div class="container-page grid gap-12 py-14 lg:grid-cols-[1fr_20rem]">
-    <!-- Static layout only: submission is wired up in the contact-form step. -->
-    <form method="post" action="/api/contact" class="grid gap-5 sm:grid-cols-2">
-      <div><label class={label} for="name">Name *</label><input class={field} id="name" name="name" required autocomplete="name" /></div>
-      <div><label class={label} for="phone">Phone *</label><input class={field} id="phone" name="phone" type="tel" required autocomplete="tel" /></div>
-      <div><label class={label} for="email">Email</label><input class={field} id="email" name="email" type="email" autocomplete="email" /></div>
-      <div><label class={label} for="postcode">Postcode *</label><input class={field} id="postcode" name="postcode" required autocomplete="postal-code" /></div>
-      <div><label class={label} for="vehicle">Vehicle make / model</label><input class={field} id="vehicle" name="vehicle" /></div>
-      <div>
-        <label class={label} for="service">Service interested in</label>
-        <select class={field} id="service" name="service">
-          <option value="">Not sure yet</option>
-          {services.map((s) => <option>{s}</option>)}
-        </select>
-      </div>
-      <div class="sm:col-span-2"><label class={label} for="date">Preferred date</label><input class={field} id="date" name="date" type="date" /></div>
-      <div class="sm:col-span-2"><label class={label} for="message">Message</label><textarea class={field} id="message" name="message" rows="5"></textarea></div>
-      <div class="hidden" aria-hidden="true"><label>Leave blank <input name="website" tabindex="-1" autocomplete="off" /></label></div>
-      <div class="sm:col-span-2"><button type="submit" class="btn-primary">Send enquiry</button></div>
-    </form>
+    <div>
+      {
+        sent ? (
+          <div class="border border-brand bg-surface p-8" role="status">
+            <h2 class="text-2xl">Thanks, we’ve got your enquiry</h2>
+            <p class="mt-3 text-muted">We’ll be in touch as soon as we can. If it’s urgent, call us on <a href={site.phoneHref} class="text-brand">{site.phone}</a>.</p>
+          </div>
+        ) : (
+          <>
+            {errorCode && (
+              <p class="mb-6 border border-red-400 p-4 text-sm text-red-400" role="alert">
+                {errorMessages[errorCode] ?? errorMessages.failed} You can also call us on <a href={site.phoneHref} class="underline">{site.phone}</a>.
+              </p>
+            )}
+            <ContactForm services={services} />
+          </>
+        )
+      }
+    </div>
 
     <aside class="h-fit border border-line bg-surface p-6">
       <h2 class="text-xl">Contact details</h2>
