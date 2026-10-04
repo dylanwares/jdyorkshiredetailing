@@ -14,7 +14,7 @@ const images = await getGalleryImages();
 Astro.response.headers.set('Cache-Control', 's-maxage=1800, stale-while-revalidate=3600');
 ---
 
-<BaseLayout title="Our Work" description="See recent mobile car detailing results from Jack Daniel’s Yorkshire Detailing Company.">
+<BaseLayout title="Our Work: Car Detailing Gallery" description="Photos of recent mobile car detailing jobs across Barnsley and South Yorkshire by Jack Daniel’s Yorkshire Detailing Company.">
   <PageHeader eyebrow="Our work" title="Recent results" intro="A look at recent jobs, straight from the driveway. Tap a photo to see it larger." />
   <div class="container-page py-14">
     <GalleryGrid images={images} />

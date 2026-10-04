@@ -8,13 +8,15 @@ import sitemap from '@astrojs/sitemap';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://jdyorkshiredetailingcompany.com',
+  // One URL form everywhere (/prices, not /prices/): canonicals, links and sitemap agree.
+  trailingSlash: 'never',
 
   // Pages are static by default; pages that use live data (prices, gallery)
   // opt out with `export const prerender = false`.
   output: 'static',
   adapter: vercel(),
 
-  integrations: [sitemap()],
+  integrations: [sitemap({ filter: (page) => !page.includes('/404') })],
 
   // Server-only settings. All optional so the site builds and runs with no env vars set.
   env: {
