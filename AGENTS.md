@@ -1,3 +1,10 @@
+## Rules
+SEO should be a big priority. Pages should be set up and built with this in mind.222
+
+## Start here
+
+Read `HANDOFF.md` first: it covers the current project state, how the user likes to work, local gotchas and next steps. `SPEC.md` is the build spec and has been kept up to date with every decision.
+
 ## Development
 
 When starting the dev server, use background mode:
