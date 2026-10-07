@@ -1,6 +1,7 @@
 import type { ImageMetadata } from 'astro';
 import { GOOGLE_DRIVE_FOLDER_ID, GOOGLE_DRIVE_KEY } from 'astro:env/server';
-import { getCache, getStale, setCache } from './cache';
+import { cachedLoad } from './cache';
+import { IMAGE_QUERY, driveList, toDriveImage } from './drive';
 
 /** A photo in the shared Google Drive folder, served through /api/gallery/[id]. */
 export interface DriveImage {
@@ -20,15 +21,9 @@ export interface LocalImage {
 
 export type GalleryImage = DriveImage | LocalImage;
 
-const CACHE_KEY = 'gallery';
 const CACHE_TTL_MS = 30 * 60 * 1000;
 // After a failed refresh, wait this long before trying Drive again.
 const RETRY_TTL_MS = 60 * 1000;
-export const FETCH_TIMEOUT_MS = 8000;
-
-// sharp can't decode HEIC, so only formats it handles are listed.
-export const IMAGE_QUERY = "(mimeType='image/jpeg' or mimeType='image/png' or mimeType='image/webp')";
-
 const localModules = import.meta.glob<{ default: ImageMetadata }>('../assets/gallery-fallback/*.{jpg,jpeg,png,webp}', {
   eager: true,
 });
@@ -42,22 +37,16 @@ async function listDriveImages(folderId: string, apiKey: string): Promise<DriveI
   let pageToken: string | undefined;
 
   do {
-    const params = new URLSearchParams({
+    const params: Record<string, string> = {
       q: `'${folderId}' in parents and ${IMAGE_QUERY} and trashed=false`,
       orderBy: 'createdTime desc',
       pageSize: '1000',
       fields: 'nextPageToken,files(id,name,thumbnailLink)',
-      key: apiKey,
-    });
-    if (pageToken) params.set('pageToken', pageToken);
+    };
+    if (pageToken) params.pageToken = pageToken;
 
-    const response = await fetch(`https://www.googleapis.com/drive/v3/files?${params}`, {
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    });
-    if (!response.ok) throw new Error(`Drive API responded ${response.status}`);
-
-    const data = (await response.json()) as { nextPageToken?: string; files?: { id: string; name: string; thumbnailLink?: string }[] };
-    for (const file of data.files ?? []) images.push({ source: 'drive', id: file.id, name: file.name, thumbnail: file.thumbnailLink });
+    const data = await driveList(params, apiKey);
+    for (const file of data.files ?? []) images.push(toDriveImage(file));
     pageToken = data.nextPageToken;
   } while (pageToken);
 
@@ -70,20 +59,15 @@ async function listDriveImages(folderId: string, apiKey: string): Promise<DriveI
  * If Drive is unset, unreachable or empty, serves the last good list, or the bundled fallback photos.
  */
 export async function getGalleryImages(): Promise<GalleryImage[]> {
-  if (!GOOGLE_DRIVE_KEY || !GOOGLE_DRIVE_FOLDER_ID) return fallback;
+  const [apiKey, folderId] = [GOOGLE_DRIVE_KEY, GOOGLE_DRIVE_FOLDER_ID];
+  if (!apiKey || !folderId) return fallback;
 
-  const cached = getCache<GalleryImage[]>(CACHE_KEY);
-  if (cached) return cached;
-
-  try {
-    const images = await listDriveImages(GOOGLE_DRIVE_FOLDER_ID, GOOGLE_DRIVE_KEY);
-    setCache(CACHE_KEY, images, CACHE_TTL_MS);
-    return images;
-  } catch (error) {
-    // Never log the request URL: it contains the API key.
-    console.error('[gallery] could not load Drive folder, using fallback:', error instanceof Error ? error.message : error);
-    const images = getStale<GalleryImage[]>(CACHE_KEY) ?? fallback;
-    setCache(CACHE_KEY, images, RETRY_TTL_MS);
-    return images;
-  }
+  return cachedLoad<GalleryImage[]>({
+    key: 'gallery',
+    ttlMs: CACHE_TTL_MS,
+    retryMs: RETRY_TTL_MS,
+    load: () => listDriveImages(folderId, apiKey),
+    fallback,
+    onError: (error) => console.error('[gallery] could not load Drive folder, using fallback:', error instanceof Error ? error.message : error),
+  });
 }

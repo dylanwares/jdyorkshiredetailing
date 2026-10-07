@@ -64,7 +64,9 @@ The spec's build order (SPEC.md §13) has 7 steps. Each step was built on its ow
 ```
 src/data/site.ts            Business details (name, phone, email, hours, area, Instagram). PLACEHOLDERS — see §7
 src/data/prices.fallback.json  Bundled prices used if the sheet fails (same shape as getPrices() output)
-src/lib/cache.ts            In-memory TTL cache with getStale() for serve-stale-on-error
+src/lib/cache.ts            cachedLoad(): in-memory TTL cache shared by prices, gallery and before/after. Serves stale/fallback on error and
+                            shares one refresh between simultaneous requests
+src/lib/drive.ts            Drive files.list helper, image query and file→DriveImage mapping shared by gallery.ts and before-after.ts
 src/lib/prices.ts           getPrices(): published-sheet CSV → papaparse → zod rows → grouped by category, sorted by order.
                             10 min cache, 1 min retry after failure, last-good → fallback JSON
 src/lib/gallery.ts          getGalleryImages(): Drive API files.list (JPEG/PNG/WebP, newest first), 30 min cache,
@@ -93,7 +95,9 @@ src/pages/                  index (SSR: gallery preview + JSON-LD), reviews (sta
                             404 (static, noindex), robots.txt.ts
 scripts/make-brand-images.mjs  Regenerates public/og-image.jpg, favicon.ico, icon-192/512, apple-touch-icon from the logo
 scripts/compress-hero-videos.sh  Re-encodes assets/hero bg*.mp4 → public/videos/hero-N(.mobile).mp4 + poster
-public/videos/              hero-1..4.mp4 (~1.9MB, 1080p), hero-1..4-mobile.mp4 (~1MB, 720p), hero-poster.jpg
+public/videos/              hero-1..4.mp4 (~1.9MB, 1080p), hero-1..4-mobile.mp4 (~1MB, 720p), hero-poster.jpg (source)
+                            and hero-poster.webp (what the page uses; made by scripts/make-brand-images.mjs, re-run it after re-encoding)
+vercel.json                 Cache-Control for /videos/*, favicons and the OG image (Vercel only auto-caches /_astro)
 prices.csv.example          The exact sheet format: category,service,description,price,active,order
 ```
 

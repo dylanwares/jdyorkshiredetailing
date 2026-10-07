@@ -45,13 +45,13 @@ const reasons = [
 >
   <JsonLd slot="head" data={businessSchema(prices)} />
   <!-- The poster is the first thing painted in the hero; fetch it before the browser finds the <video>. -->
-  <link slot="head" rel="preload" as="image" href="/videos/hero-poster.jpg" fetchpriority="high" />
+  <link slot="head" rel="preload" as="image" type="image/webp" href="/videos/hero-poster.webp" fetchpriority="high" />
   <section class="relative isolate flex min-h-[85svh] items-end overflow-hidden md:items-center">
     <div id="hero-bg" class="absolute inset-0 -z-10 will-change-transform">
       <video
         id="hero-video"
         class="absolute inset-x-0 top-0 h-[55%] w-full object-cover object-[55%_center] transition-opacity duration-1000 ease-in-out md:inset-0 md:h-full"
-        poster="/videos/hero-poster.jpg"
+        poster="/videos/hero-poster.webp"
         autoplay
         muted
         loop

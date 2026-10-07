@@ -1,4 +1,4 @@
-// Generates the social preview image and favicons from the logo and hero footage.
+// Generates the social preview image, favicons and the WebP hero poster from the logo and hero footage.
 // Re-run after changing the logo:  node scripts/make-brand-images.mjs
 import sharp from 'sharp';
 import { writeFile } from 'node:fs/promises';
@@ -7,6 +7,9 @@ const INK = '#0a0e14';
 const logo = 'src/assets/logo.png'; // full logo, transparent background
 const mark = 'src/assets/logo-mark.png'; // car + sparkles only
 const poster = 'public/videos/hero-poster.jpg';
+
+// The page uses a WebP copy of the poster (about 60% of the JPEG's size); the JPEG stays as the source for the images below.
+await sharp(poster).webp({ quality: 80, effort: 6 }).toFile('public/videos/hero-poster.webp');
 
 // 1200x630 Open Graph image: darkened hero frame with the logo centred.
 const background = await sharp(poster).resize(1200, 630, { fit: 'cover' }).toBuffer();
@@ -54,4 +57,4 @@ header.writeUInt32LE(png32.length, 14); // image size
 header.writeUInt32LE(22, 18); // image offset
 await writeFile('public/favicon.ico', Buffer.concat([header, png32]));
 
-console.log('Wrote public/og-image.jpg, favicon.ico, apple-touch-icon.png, icon-192.png, icon-512.png');
+console.log('Wrote public/videos/hero-poster.webp, public/og-image.jpg, favicon.ico, apple-touch-icon.png, icon-192.png, icon-512.png');

@@ -18,12 +18,11 @@ export const GET: APIRoute = async ({ params, url }) => {
 
   // Only serve files that are in the current folder listing: gallery photos, or photos that are
   // part of a complete before/after pair.
-  const images = await getGalleryImages();
-  let image = images.find((candidate) => candidate.source === 'drive' && candidate.id === id);
-  if (!image) {
-    const pairs = await getBeforeAfterPairs();
-    image = pairs.flatMap((pair) => [pair.before, pair.after]).find((candidate) => candidate.source === 'drive' && candidate.id === id);
-  }
+  // Both lookups run together (and are cached), so a before/after photo doesn't wait for the gallery list first.
+  const [images, pairs] = await Promise.all([getGalleryImages(), getBeforeAfterPairs()]);
+  const image = [...images, ...pairs.flatMap((pair) => [pair.before, pair.after])].find(
+    (candidate) => candidate.source === 'drive' && candidate.id === id,
+  );
   if (!GOOGLE_DRIVE_KEY || image?.source !== 'drive') return new Response('Not found', { status: 404 });
 
   // Prefer Drive's pre-sized thumbnail (~0.5s, under 600KB). If it's missing or has expired,
@@ -50,7 +49,7 @@ export const GET: APIRoute = async ({ params, url }) => {
     return new Response(new Uint8Array(body), {
       headers: {
         'Content-Type': 'image/webp',
-        'Cache-Control': 'public, max-age=2592000, s-maxage=2592000, stale-while-revalidate=86400',
+        'Cache-Control': 'public, max-age=2592000, s-maxage=2592000, stale-while-revalidate=86400, immutable',
       },
     });
   } catch {

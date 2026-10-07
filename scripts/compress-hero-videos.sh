@@ -4,6 +4,8 @@
 #
 #   FFMPEG=/path/to/ffmpeg scripts/compress-hero-videos.sh [desktop_MB] [mobile_MB]
 #
+# Afterwards run "node scripts/make-brand-images.mjs" to refresh the WebP poster the page uses.
+#
 # Clips are read in order: "hero bg.mp4", "hero bg2.mp4", "hero bg3.mp4", "hero bg 4.mp4" ...
 set -euo pipefail
 cd "$(dirname "$0")/.."
