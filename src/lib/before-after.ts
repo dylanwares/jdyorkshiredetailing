@@ -12,7 +12,7 @@ const RETRY_TTL_MS = 60 * 1000;
 
 // The client creates this folder inside the gallery folder. Matches "Before and After",
 // "before & after", etc.
-const FOLDER_NAME = /^befores*(and|&)s*after$/i;
+const FOLDER_NAME = /^before\s*(and|&)\s*after$/i;
 
 async function listPairs(parentId: string, apiKey: string): Promise<BeforeAfterPair[]> {
   const folders = await driveList(
