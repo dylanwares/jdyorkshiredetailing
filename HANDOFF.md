@@ -31,6 +31,7 @@ The spec's build order (SPEC.md §13) has 7 steps. Each step was built on its ow
 | 5 | Contact form, Resend, Telegram | On `main` (PR #2) |
 | 6 | SEO, JSON-LD, OG image, favicons, robots | On `main` (PR #4) |
 | 7 | Accessibility/performance pass, README, OWNER_GUIDE.md | On `main` (merged 2026-10-07). See the update below |
+| 9 | Before/after slider on the home page | **Branch `step-9`, awaiting review** (steps 8 and 10 onwards: see §8) |
 
 **Update (2026-10-07, step 7 session):** work has moved to a **Windows** PC (Git Bash + PowerShell, no Python, no ffmpeg, Edge but no Chrome). Node was upgraded there from 20.17 to 24.19 LTS via winget. There is no `.env` on that machine, so it runs on fallbacks only. `src/assets/gallery/` (the 177MB originals) is not on it; that folder is still only on the Mac. Step 7 results: Lighthouse (local dev server, mobile) Accessibility 100 and Best Practices 100 on all four pages; SEO 92 locally only because of the dev toolbar link. Performance still has to be measured on the Vercel preview. Scripted headless-Edge checks at 375px passed: no horizontal scroll, the call bar clears the footer, no console errors, the mobile menu (Esc, outside tap), the lightbox (open, arrows, wrap, Esc, focus return, scroll lock, backdrop) and the contact form (inline errors, focus, redirect, no-JS POST, honeypot). Not checked: real iOS Safari.
 
@@ -67,7 +68,10 @@ src/lib/prices.ts           getPrices(): published-sheet CSV → papaparse → z
                             10 min cache, 1 min retry after failure, last-good → fallback JSON
 src/lib/gallery.ts          getGalleryImages(): Drive API files.list (JPEG/PNG/WebP, newest first), 30 min cache,
                             fallback = src/assets/gallery-fallback/*.jpg via import.meta.glob
-src/pages/api/gallery/[id].ts  Image proxy: only IDs in the current listing; fetches Drive's thumbnailLink at =s{w}
+src/lib/before-after.ts     getBeforeAfterPairs(): photos in the "Before and After" subfolder of the Drive folder, paired by name
+                            (`x-before` / `x-after`, logic in src/lib/pairing.ts). Unpaired photos are never shown. 30 min cache
+src/components/BeforeAfter.astro  The slider (clipped before image + transparent range input). Used on the home page only
+src/pages/api/gallery/[id].ts  Image proxy: only IDs in the current listing or in a complete before/after pair; fetches Drive's thumbnailLink at =s{w}
                             (fast, ~0.5s), falls back to alt=media original; sharp → WebP; widths 480/960/1600;
                             long cache headers. The API key never reaches the browser
 src/lib/validation.ts       zod enquiry schema (UK phone/postcode, length limits, newline stripping)
@@ -138,10 +142,10 @@ The home page reviews are placeholders ("Customer review placeholder"). The serv
 Step 7 is merged. What's left before launch, in order. Each step gets its own `step-N` branch and a stop for review. The user asked for a before/after slider on the home page, so it is planned as step 9.
 
 1. **Step 8: close out step 7.** Re-run Lighthouse (mobile) on `jdyorkshiredetailing.vercel.app` once the merge has deployed. The step 7 baseline is in the status section above. Target ≥ 95 in all four categories on all four pages. Our Work was the weak one (90), so check it first. Copy the user's `.env` to this machine if live data is needed. Gitignore `src/assets/gallery/` on the Mac.
-2. **Step 9: before/after slider** on the home page, just below the gallery preview.
-   - A drag-handle slider with no library. Use `<input type="range">` for touch, mouse, keyboard and screen readers.
-   - Photo source is undecided. Recommended: a "Before and After" subfolder in the existing Drive folder, files named in pairs (`audi-before.jpg` / `audi-after.jpg`). One bundled pair is the fallback. The alternative is bundled photos only.
-   - Fixed aspect ratio (no layout shift), lazy-loaded, "Before" and "After" labels. Update `OWNER_GUIDE.md`.
+2. **Step 9: before/after slider** (built on `step-9`, awaiting review; see `SPEC.md` §5b).
+   - The client makes a "Before and After" subfolder in the Drive folder (**not created yet** when this was built, so the section is hidden on the live site until it exists) and uploads `<name>-before` / `<name>-after` pairs. Unpaired photos are not shown. The latest 4 pairs show on the home page, below the gallery preview.
+   - Tested in headless Edge at 375px and desktop with stand-in photos: tap and drag at any height, touch drag, keyboard, focus ring, aria values, page still scrolls with a vertical swipe. The Drive lookup (folder and image queries) was checked against the real API and returns the expected empty result. **Not tested against a real pair in Drive**, so do that once the folder exists (tick the new §12 item).
+   - Decision: **no bundled fallback pair.** A made-up pair would be misleading, so with no pairs the section is simply left out.
 3. **Step 10: privacy and legal.** A `/privacy` page (the contact form collects name, phone and postcode), linked from the footer and the form. Company name and number in the footer if the business is a limited company. Analytics are optional (Vercel Web Analytics needs no cookie banner).
 4. **Step 11: real content (needs the client).** Replace the placeholders listed in §7: phone, email, hours, `areaServed` towns, the reviews and the service-card photos. Add real before/after pairs. Fill in the user's contact details in `OWNER_GUIDE.md`. Optional: a thousands separator for prices (`£1120` → `£1,120`).
 5. **Step 12: production setup and testing.** Add every variable from §7 in Vercel's Production environment. Verify the domain in Resend (DNS records in Cloudflare; this doesn't affect the current site). Optional Telegram bot. Send a real enquiry on production. Time a price edit (about 10 minutes) and a new photo (about 30 minutes). Test on a real iPhone and an Android phone. Check the Google Rich Results Test and an OG preview (e.g. opengraph.xyz).

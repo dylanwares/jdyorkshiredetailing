@@ -3,9 +3,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import GalleryGrid from '../components/GalleryGrid.astro';
 import Placeholder from '../components/Placeholder.astro';
 import Lightbox from '../components/Lightbox.astro';
+import BeforeAfter from '../components/BeforeAfter.astro';
 import CTA from '../components/CTA.astro';
 import JsonLd from '../components/JsonLd.astro';
 import { getGalleryImages } from '../lib/gallery';
+import { getBeforeAfterPairs } from '../lib/before-after';
 import { getPrices } from '../lib/prices';
 import { businessSchema } from '../lib/schema';
 import { site } from '../data/site';
@@ -13,9 +15,10 @@ import { site } from '../data/site';
 // Server-rendered so the gallery preview follows the Drive folder without a redeploy.
 export const prerender = false;
 
-const [galleryImages, prices] = await Promise.all([
+const [galleryImages, prices, beforeAfter] = await Promise.all([
   getGalleryImages().then((images) => images.slice(0, 6)),
   getPrices(),
+  getBeforeAfterPairs().then((pairs) => pairs.slice(0, 4)),
 ]);
 Astro.response.headers.set('Cache-Control', 's-maxage=1800, stale-while-revalidate=3600');
 
@@ -76,6 +79,19 @@ const reasons = [
       <GalleryGrid images={galleryImages} />
     </div>
   </section>
+
+  {
+    beforeAfter.length > 0 && (
+      <section class="container-page pb-16 md:pb-24">
+        <p class="eyebrow">Results</p>
+        <h2 class="mt-3 text-3xl sm:text-4xl">Before &amp; after</h2>
+        <p class="mt-3 max-w-xl text-muted">Drag the slider to see the difference a proper detail makes.</p>
+        <div class="mt-8">
+          <BeforeAfter pairs={beforeAfter} />
+        </div>
+      </section>
+    )
+  }
 
   <section class="border-y border-line bg-surface py-16 md:py-24">
     <div class="container-page">

@@ -33,6 +33,19 @@ Every photo in your shared **gallery folder** in Google Drive appears on the Our
 - Videos and other files in the folder are ignored. So is the price sheet.
 - **Don't change the folder's sharing setting.** It has to stay on "Anyone with the link can view".
 
+## Before and after slider
+
+The home page can show a **Before & after** slider: visitors drag a handle to compare two photos of the same car. It uses photos from a subfolder of your gallery folder.
+
+1. In your gallery folder, create a subfolder called **Before and After**.
+2. Upload each pair with **the same name**, ending in `-before` and `-after`. For example, `audi-a3-before.jpg` and `audi-a3-after.jpg`. The name in front of `-before` or `-after` is shown under the slider (`audi-a3` appears as "Audi A3").
+3. Wait about 30 minutes for it to appear on the home page.
+
+- **A photo without a partner isn't shown.** If you upload `audi-a3-before.jpg` but no `audi-a3-after.jpg`, neither appears until the second photo is added.
+- The latest **4 pairs** are shown. To remove a pair, delete either photo.
+- With no pairs in the folder, the section doesn't appear at all.
+- For the best result, take both photos from the **same angle and distance**, in landscape (sideways), and use JPEG, like the gallery photos. Photos are shown in a 4:3 frame, so the edges of very tall photos get cropped.
+
 ## Enquiries
 
 When someone fills in the form on the Contact page, the enquiry is **emailed to you** straight away. If the phone alert is set up, you'll get a **Telegram message** too. Reply to the email to reply to the customer, if they left an email address. Their phone number is always included.

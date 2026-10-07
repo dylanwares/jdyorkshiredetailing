@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import sharp from 'sharp';
 import { GOOGLE_DRIVE_KEY } from 'astro:env/server';
 import { getGalleryImages } from '../../../lib/gallery';
+import { getBeforeAfterPairs } from '../../../lib/before-after';
 
 export const prerender = false;
 
@@ -15,9 +16,14 @@ export const GET: APIRoute = async ({ params, url }) => {
   const requested = Number(url.searchParams.get('w'));
   const width = WIDTHS.includes(requested) ? requested : DEFAULT_WIDTH;
 
-  // Only serve files that are in the current folder listing.
+  // Only serve files that are in the current folder listing: gallery photos, or photos that are
+  // part of a complete before/after pair.
   const images = await getGalleryImages();
-  const image = images.find((candidate) => candidate.source === 'drive' && candidate.id === id);
+  let image = images.find((candidate) => candidate.source === 'drive' && candidate.id === id);
+  if (!image) {
+    const pairs = await getBeforeAfterPairs();
+    image = pairs.flatMap((pair) => [pair.before, pair.after]).find((candidate) => candidate.source === 'drive' && candidate.id === id);
+  }
   if (!GOOGLE_DRIVE_KEY || image?.source !== 'drive') return new Response('Not found', { status: 404 });
 
   // Prefer Drive's pre-sized thumbnail (~0.5s, under 600KB). If it's missing or has expired,

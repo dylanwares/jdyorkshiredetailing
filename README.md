@@ -78,8 +78,13 @@ src/lib/prices.ts             getPrices(): sheet CSV → papaparse → zod → g
                               10-minute cache; on failure serves the last good copy, then the fallback JSON
 src/lib/gallery.ts            getGalleryImages(): Drive files.list (JPEG/PNG/WebP, newest first).
                               30-minute cache; fallback photos in src/assets/gallery-fallback/
-src/pages/api/gallery/[id].ts Image proxy: resizes Drive photos to WebP at 480/960/1600px.
-                              Serves only IDs in the current listing; the API key never reaches the browser
+src/lib/before-after.ts       getBeforeAfterPairs(): photos in the "Before and After" subfolder of the gallery folder,
+                              paired by file name (x-before / x-after) in src/lib/pairing.ts. Unpaired photos are dropped.
+                              30-minute cache, no bundled fallback (no pairs = section hidden on the home page)
+src/components/BeforeAfter.astro  The slider: clipped "before" image over "after", with a transparent range input for dragging
+src/pages/api/gallery/[id].ts Image proxy: resizes Drive photos to WebP at 320/480/960/1600px.
+                              Serves only IDs in the gallery listing or in a complete before/after pair;
+                              the API key never reaches the browser
 src/pages/api/contact.ts      Enquiry POST: origin check → honeypot → zod → rate limit → Turnstile (if on) → notify
 src/lib/notify.ts             Resend email and Telegram message, sent in parallel
 src/lib/schema.ts             LocalBusiness (AutoWash) and OfferCatalog JSON-LD
