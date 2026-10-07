@@ -71,7 +71,7 @@ src/lib/gallery.ts          getGalleryImages(): Drive API files.list (JPEG/PNG/W
                             fallback = src/assets/gallery-fallback/*.jpg via import.meta.glob
 src/lib/before-after.ts     getBeforeAfterPairs(): photos in the "Before and After" subfolder of the Drive folder, paired by name
                             (`x-before` / `x-after`, logic in src/lib/pairing.ts). Unpaired photos are never shown. 30 min cache
-src/components/BeforeAfter.astro  The slider (clipped before image + transparent range input). Used on the home page only
+src/components/BeforeAfter.astro  The slider (clipped before image; pointer-event dragging plus a hidden range input for a11y). Touch-fix history: a native range with a 1px thumb could not be grabbed on real phones. Used on the home page only
 src/pages/api/gallery/[id].ts  Image proxy: only IDs in the current listing or in a complete before/after pair; fetches Drive's thumbnailLink at =s{w}
                             (fast, ~0.5s), falls back to alt=media original; sharp → WebP; widths 480/960/1600;
                             long cache headers. The API key never reaches the browser

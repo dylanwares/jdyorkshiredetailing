@@ -83,7 +83,7 @@ src/data/reviews.json         Reviews carried over from the old site. src/lib/re
 src/lib/before-after.ts       getBeforeAfterPairs(): photos in the "Before and After" subfolder of the gallery folder,
                               paired by file name (x-before / x-after) in src/lib/pairing.ts. Unpaired photos are dropped.
                               30-minute cache, no bundled fallback (no pairs = section hidden on the home page)
-src/components/BeforeAfter.astro  The slider: clipped "before" image over "after", with a transparent range input for dragging
+src/components/BeforeAfter.astro  The slider: clipped "before" image over "after", dragged with pointer events, plus a hidden range input for keyboards and screen readers
 src/pages/api/gallery/[id].ts Image proxy: resizes Drive photos to WebP at 320/480/960/1600px.
                               Serves only IDs in the gallery listing or in a complete before/after pair;
                               the API key never reaches the browser
