@@ -30,11 +30,11 @@ The spec's build order (SPEC.md §13) has 7 steps. Each step was built on its ow
 | 4 | Gallery from Google Drive | On `main` (pushed straight to main at user's request) |
 | 5 | Contact form, Resend, Telegram | On `main` (PR #2) |
 | 6 | SEO, JSON-LD, OG image, favicons, robots | On `main` (PR #4) |
-| 7 | Accessibility/performance pass, README, OWNER_GUIDE.md | **Branch `step-7`, awaiting review.** See the update below |
+| 7 | Accessibility/performance pass, README, OWNER_GUIDE.md | On `main` (merged 2026-10-07). See the update below |
 
 **Update (2026-10-07, step 7 session):** work has moved to a **Windows** PC (Git Bash + PowerShell, no Python, no ffmpeg, Edge but no Chrome). Node was upgraded there from 20.17 to 24.19 LTS via winget. There is no `.env` on that machine, so it runs on fallbacks only. `src/assets/gallery/` (the 177MB originals) is not on it; that folder is still only on the Mac. Step 7 results: Lighthouse (local dev server, mobile) Accessibility 100 and Best Practices 100 on all four pages; SEO 92 locally only because of the dev toolbar link. Performance still has to be measured on the Vercel preview. Scripted headless-Edge checks at 375px passed: no horizontal scroll, the call bar clears the footer, no console errors, the mobile menu (Esc, outside tap), the lightbox (open, arrows, wrap, Esc, focus return, scroll lock, backdrop) and the contact form (inline errors, focus, redirect, no-JS POST, honeypot). Not checked: real iOS Safari.
 
-**Domain not live yet:** `jdyorkshiredetailingcompany.com` currently serves a different site (Express behind Cloudflare). This Astro site is only live at `jdyorkshiredetailing.vercel.app`. The DNS has to be pointed at Vercel before launch. Lighthouse mobile baseline on the vercel.app production (before step 7): Home 98/100/96/100, Prices 100/100/96/100, Our Work **90**/100/96/100, Contact 100/100/96/100 (Perf/A11y/BP/SEO). The 96s were the low-res header logo, and Our Work was LCP 3.3s; step 7 targets both. After-scores need the preview (behind Deployment Protection, so log in or use a bypass token) or a re-run after merge.
+**Domain:** `jdyorkshiredetailingcompany.com` still serves the client's current site (Express behind Cloudflare). That is intentional: this site is not finished, and the DNS is only switched at step 14. Until then this site is live at `jdyorkshiredetailing.vercel.app`. Lighthouse mobile baseline there before step 7 (Perf/A11y/Best Practices/SEO): Home 98/100/96/100, Prices 100/100/96/100, Our Work **90**/100/96/100, Contact 100/100/96/100. Step 7 fixed the 96s (low-res header logo) and cut Our Work's image weight (LCP was 3.3s). After-scores still need measuring on the deployed site: preview deployments sit behind Vercel Deployment Protection, so Lighthouse can't reach them.
 
 ## 3. How the user likes to work (important)
 
@@ -135,36 +135,33 @@ The home page reviews are placeholders ("Customer review placeholder"). The serv
 
 ## 8. Next steps
 
-1. **Merge `step-6`** once the user approves it. Then check, on the deployed site: Google Rich Results Test, an OG preview (e.g. opengraph.xyz), the `/prices/` → `/prices` 308, and that preview deployments send `X-Robots-Tag: noindex`.
-2. **Step 7 (plan it first, then stop for review afterwards):**
-   - **Lighthouse ≥ 95 on mobile** for Performance, Accessibility, Best Practices and SEO (SPEC.md §8, §12). Likely areas:
-     - LCP and weight of the hero video and poster.
-     - Font loading (Fontsource variable fonts are imported in `global.css`).
-     - Gallery image sizes and `sizes` attributes.
-     - Colour contrast of muted text and of red error text on dark backgrounds.
-     - Tap targets.
-     - The lightbox `<dialog>` focus handling.
-   - No Lighthouse run has been done yet.
-   - **Browser checks that were never done:** the lightbox (open, previous/next, Esc, focus return, scroll lock), the contact form's fetch path with inline errors, and every page at 375px. The user has viewed pages, but there's no systematic pass.
-   - **README.md** with setup and deploy steps: env vars, Vercel, `make-brand-images`, the video script.
-   - **OWNER_GUIDE.md** (SPEC.md §11), one page in plain English for the client:
-     - Editing prices: don't change the header row or the tab name `Prices`. `active` FALSE hides a row, and a blank price shows "Contact for quote". Changes show up in about 10 to 25 minutes, because of Google's publish lag plus the 10-minute server cache plus the edge cache.
-     - Adding photos to Drive: JPEG not HEIC. They appear in about 30 minutes, and deleting from the folder removes them.
-     - Where enquiries arrive (email, Telegram), and what to do if they stop.
-     - Who to contact.
-   - **The after-launch checklist** from SPEC.md §9: Search Console with the sitemap, a Google Business Profile, and the Rich Results Test.
-3. **Optional ideas offered but not taken up:**
-   - A protected price-refresh link (`/prices?refresh=<secret>`) to bust the caches.
-   - A thousands separator for prices (shows `£1120`).
-   - A two-video crossfade with no dark dip between hero clips.
+Step 7 is merged. What's left before launch, in order. Each step gets its own `step-N` branch and a stop for review. The user asked for a before/after slider on the home page, so it is planned as step 9.
+
+1. **Step 8: close out step 7.** Re-run Lighthouse (mobile) on `jdyorkshiredetailing.vercel.app` once the merge has deployed. The step 7 baseline is in the status section above. Target ≥ 95 in all four categories on all four pages. Our Work was the weak one (90), so check it first. Copy the user's `.env` to this machine if live data is needed. Gitignore `src/assets/gallery/` on the Mac.
+2. **Step 9: before/after slider** on the home page, just below the gallery preview.
+   - A drag-handle slider with no library. Use `<input type="range">` for touch, mouse, keyboard and screen readers.
+   - Photo source is undecided. Recommended: a "Before and After" subfolder in the existing Drive folder, files named in pairs (`audi-before.jpg` / `audi-after.jpg`). One bundled pair is the fallback. The alternative is bundled photos only.
+   - Fixed aspect ratio (no layout shift), lazy-loaded, "Before" and "After" labels. Update `OWNER_GUIDE.md`.
+3. **Step 10: privacy and legal.** A `/privacy` page (the contact form collects name, phone and postcode), linked from the footer and the form. Company name and number in the footer if the business is a limited company. Analytics are optional (Vercel Web Analytics needs no cookie banner).
+4. **Step 11: real content (needs the client).** Replace the placeholders listed in §7: phone, email, hours, `areaServed` towns, the reviews and the service-card photos. Add real before/after pairs. Fill in the user's contact details in `OWNER_GUIDE.md`. Optional: a thousands separator for prices (`£1120` → `£1,120`).
+5. **Step 12: production setup and testing.** Add every variable from §7 in Vercel's Production environment. Verify the domain in Resend (DNS records in Cloudflare; this doesn't affect the current site). Optional Telegram bot. Send a real enquiry on production. Time a price edit (about 10 minutes) and a new photo (about 30 minutes). Test on a real iPhone and an Android phone. Check the Google Rich Results Test and an OG preview (e.g. opengraph.xyz).
+6. **Step 13: protect the old site's search ranking.** List the old site's indexed URLs (Search Console or a `site:` search). Add 301 redirects to the matching new pages. Keep a copy of the old site.
+7. **Step 14: switch the domain.** In Vercel, add `jdyorkshiredetailingcompany.com`. In Cloudflare, change only the web records (apex and `www`), set to "DNS only", and **leave the MX/email records untouched**. `www` should redirect to the bare domain. Then check every page, the form and the redirects.
+8. **Step 15: after launch.** Search Console with `sitemap-index.xml`, update the Google Business Profile with the new site, check a WhatsApp/Facebook share preview, and watch enquiries closely for the first week.
+
+**Optional ideas offered but not taken up:**
+- A protected price-refresh link (`/prices?refresh=<secret>`) to bust the caches.
+- A two-video crossfade with no dark dip between hero clips.
+- A vector version of the logo.
 
 ## 9. Loose ends and risks
 
-- **`src/assets/gallery/`** holds 39 original client photos (177MB). They're **untracked and not gitignored**. Never `git add -A` or `git add .` here; add paths explicitly. I asked the user whether to gitignore the folder and got no answer yet. Raise it again.
+- **`src/assets/gallery/`** holds 39 original client photos (177MB). They're **untracked and not gitignored**. Never `git add -A` or `git add .` here; add paths explicitly. Step 8 includes gitignoring it.
 - `assets/hero bg.mp4` (5MB original) was committed in step 1. The other source clips and the 118MB GIF are gitignored.
 - **Caches are per serverless instance.** The price, gallery and rate-limit state is in memory, so on Vercel each instance has its own copy. That's acceptable for this site, and the edge `s-maxage` does most of the work.
 - **The image route** relies on Drive `thumbnailLink` URLs, which are unofficial and expire. That's why the listing refreshes every 30 minutes and the route falls back to the original. If gallery images ever 502, look here first.
 - `npm install` reports audit warnings that were already there. Nothing has been looked into.
 - Spec acceptance criteria (SPEC.md §12):
   - **Verified locally:** the prices behaviours, the gallery fallback, ignoring non-images, no key leak, the honeypot, a real Resend email, and the build passing.
-  - **Not yet verified:** the 375px pass, Lighthouse, and the timing behaviour on Vercel.
+  - **Verified in step 7:** the 375px pass (headless Edge), the lightbox, the mobile menu and the form's fetch and no-JS paths.
+  - **Not yet verified:** Lighthouse Performance after step 7 (only the pre-step-7 baseline exists), a real iPhone, and price/photo update timing on Vercel.
