@@ -95,7 +95,9 @@ src/pages/                  index (SSR: gallery preview + JSON-LD), reviews (sta
                             404 (static, noindex), robots.txt.ts
 scripts/make-brand-images.mjs  Regenerates public/og-image.jpg, favicon.ico, icon-192/512, apple-touch-icon from the logo
 scripts/compress-hero-videos.sh  Re-encodes assets/hero bg*.mp4 → public/videos/hero-N(.mobile).mp4 + poster
-public/videos/              hero-1..4.mp4 (~1.9MB, 1080p), hero-1..4-mobile.mp4 (~1MB, 720p), hero-poster.jpg
+public/videos/              hero-1..4.mp4 (~1.9MB, 1080p), hero-1..4-mobile.mp4 (~1MB, 720p), hero-poster.jpg (source)
+                            and hero-poster.webp (what the page uses; made by scripts/make-brand-images.mjs, re-run it after re-encoding)
+vercel.json                 Cache-Control for /videos/*, favicons and the OG image (Vercel only auto-caches /_astro)
 prices.csv.example          The exact sheet format: category,service,description,price,active,order
 ```
 
