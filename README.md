@@ -60,7 +60,7 @@ An enquiry counts as delivered if at least one channel (email or Telegram) succe
 
 The repo is connected to Vercel:
 - A push to **`main` deploys to production**.
-- Any other branch gets a preview URL. Vercel should send `X-Robots-Tag: noindex` on previews so search engines don't index them. That hasn't been checked yet.
+- Any other branch gets a preview URL. Previews send `X-Robots-Tag: noindex` (checked 2026-10-07), so search engines don't index them. They sit behind Vercel Deployment Protection, so you need to be logged in to Vercel to view them.
 
 **Every variable above also has to be added in Vercel** (Project → Settings → Environment Variables). A local `.env` isn't deployed.
 
