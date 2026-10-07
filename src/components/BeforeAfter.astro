@@ -44,7 +44,7 @@ const items = await Promise.all(
   {
     items.map((item) => (
       <figure data-ba class="group" style="--pos: 50%">
-        <div class="relative aspect-[4/3] w-full select-none overflow-hidden bg-surface">
+        <div data-ba-frame class="relative aspect-[4/3] w-full cursor-ew-resize select-none overflow-hidden bg-surface [-webkit-touch-callout:none] [touch-action:pan-y]">
           <img
             src={item.after.src}
             srcset={item.after.srcset}
@@ -53,7 +53,7 @@ const items = await Promise.all(
             loading="lazy"
             decoding="async"
             draggable="false"
-            class="absolute inset-0 h-full w-full object-cover"
+            class="pointer-events-none absolute inset-0 h-full w-full object-cover"
           />
           <img
             src={item.before.src}
@@ -63,7 +63,7 @@ const items = await Promise.all(
             loading="lazy"
             decoding="async"
             draggable="false"
-            class="absolute inset-0 h-full w-full object-cover"
+            class="pointer-events-none absolute inset-0 h-full w-full object-cover"
             style="clip-path: inset(0 calc(100% - var(--pos)) 0 0)"
           />
 
@@ -84,7 +84,7 @@ const items = await Promise.all(
             value="50"
             data-ba-range
             aria-label={`Compare ${item.name} before and after`}
-            class="absolute inset-0 m-0 h-full w-full cursor-ew-resize opacity-0 [touch-action:pan-y]"
+            class="pointer-events-none absolute inset-0 m-0 h-full w-full opacity-0"
           />
         </div>
         <figcaption class="mt-3 flex items-baseline justify-between gap-4 text-sm">
@@ -96,40 +96,76 @@ const items = await Promise.all(
   }
 </div>
 
-<style>
-  /* A zero-width thumb makes the handle sit exactly under the finger or cursor; with the
-     default thumb it lags by up to half the thumb's width at either end. */
-  [data-ba-range] {
-    appearance: none;
-    background: transparent;
-  }
-  [data-ba-range]::-webkit-slider-thumb {
-    appearance: none;
-    width: 1px;
-    height: 100%;
-    background: transparent;
-    border: 0;
-  }
-  [data-ba-range]::-moz-range-thumb {
-    width: 1px;
-    height: 100%;
-    background: transparent;
-    border: 0;
-  }
-</style>
-
 <script>
-  document.querySelectorAll<HTMLInputElement>('[data-ba-range]').forEach((input) => {
-    const figure = input.closest<HTMLElement>('[data-ba]');
-    if (!figure) return;
+  // Dragging is handled with pointer events on the whole photo (a native range input is hard to
+  // grab with a finger, especially on iPhones). The range input stays on top, invisible, so keyboards
+  // and screen readers still get a proper slider. touch-action: pan-y on the frame lets a vertical
+  // swipe scroll the page while a horizontal drag moves the slider.
+  document.querySelectorAll<HTMLElement>('[data-ba]').forEach((figure) => {
+    const frame = figure.querySelector<HTMLElement>('[data-ba-frame]');
+    const input = figure.querySelector<HTMLInputElement>('[data-ba-range]');
+    if (!frame || !input) return;
 
     const update = () => {
       const value = Number(input.value);
       figure.style.setProperty('--pos', `${value}%`);
       input.setAttribute('aria-valuetext', `${value}% before, ${100 - value}% after`);
     };
-    input.addEventListener('input', update);
+    const setFromPointer = (event: PointerEvent) => {
+      const box = frame.getBoundingClientRect();
+      const percent = ((event.clientX - box.left) / box.width) * 100;
+      input.value = String(Math.round(Math.min(100, Math.max(0, percent))));
+      update();
+    };
 
+    // A mouse moves the slider as soon as it is pressed. A finger waits: browsers send a few
+    // pointer-move events before they commit to scrolling the page, so the slider only follows once
+    // the movement is clearly horizontal. A vertical scroll leaves it alone, and a tap moves it.
+    const SLOP = 8; // px a finger may wander before it counts as a gesture
+    let dragging = false;
+    let horizontal = false;
+    let scrolling = false;
+    let startX = 0;
+    let startY = 0;
+    frame.addEventListener('pointerdown', (event) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      dragging = true;
+      horizontal = scrolling = false;
+      startX = event.clientX;
+      startY = event.clientY;
+      frame.setPointerCapture(event.pointerId);
+      if (event.pointerType === 'mouse') {
+        horizontal = true;
+        setFromPointer(event);
+      }
+    });
+    frame.addEventListener('pointermove', (event) => {
+      if (!dragging || scrolling) return;
+      if (!horizontal) {
+        const dx = Math.abs(event.clientX - startX);
+        const dy = Math.abs(event.clientY - startY);
+        if (dx < SLOP && dy < SLOP) return;
+        if (dy > dx) {
+          scrolling = true;
+          return;
+        }
+        horizontal = true;
+      }
+      setFromPointer(event);
+    });
+    frame.addEventListener('pointerup', (event) => {
+      const tap = dragging && !horizontal && !scrolling;
+      dragging = false;
+      if (tap) setFromPointer(event);
+    });
+    const cancel = () => {
+      dragging = false;
+    };
+    frame.addEventListener('pointercancel', cancel);
+    frame.addEventListener('lostpointercapture', cancel);
+
+    // Screen-reader and keyboard changes arrive as input events.
+    input.addEventListener('input', update);
     // Browsers move a range by 1 per arrow press, which is slow across a photo.
     input.addEventListener('keydown', (event) => {
       if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;

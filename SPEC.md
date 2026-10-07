@@ -101,7 +101,7 @@ A comparison slider on the home page, just below the gallery preview. The client
 - The image route `/api/gallery/[id]` serves a photo only if it is in the gallery listing or in a complete pair.
 - There are no bundled fallback photos (a made-up pair would be misleading). With no pairs, or with Drive unset or failing, the section is left out of the page.
 - The latest 4 pairs are shown: one pair is centred and wide, two or more sit in two columns on desktop.
-- `src/components/BeforeAfter.astro`: a 4:3 frame (no layout shift), the "before" photo clipped over the "after" one, "Before" and "After" labels, and a handle. A native `<input type="range">` covers the frame, so touch, mouse and keyboard (arrows move 5%, Home/End jump to the ends) work, it is announced to screen readers, and vertical swipes still scroll the page. No library. Photos are lazy-loaded.
+- `src/components/BeforeAfter.astro`: a 4:3 frame (no layout shift), the "before" photo clipped over the "after" one, "Before" and "After" labels, and a handle. Dragging uses pointer events on the whole photo (a native range input proved impossible to grab on phones). On touch, the slider moves only on a clearly horizontal drag or a tap, so a vertical swipe still scrolls the page and never nudges it (`touch-action: pan-y`). A visually hidden `<input type="range">` stays on top for keyboards (arrows move 5%, Home/End jump to the ends) and screen readers. No library. Photos are lazy-loaded.
 
 ## 6. Contact Form
 
