@@ -29,10 +29,10 @@ The spec's build order (SPEC.md §13) has 7 steps. Each step was built on its ow
 | 3 | Prices from Google Sheet | On `main` (PR #1) |
 | 4 | Gallery from Google Drive | On `main` (pushed straight to main at user's request) |
 | 5 | Contact form, Resend, Telegram | On `main` (PR #2) |
-| 6 | SEO, JSON-LD, OG image, favicons, robots | **Branch `step-6`, pushed, NOT merged yet.** The user was reviewing it |
-| 7 | Accessibility/performance pass, README, OWNER_GUIDE.md | **Not started.** This is the next job |
+| 6 | SEO, JSON-LD, OG image, favicons, robots | On `main` (PR #4) |
+| 7 | Accessibility/performance pass, README, OWNER_GUIDE.md | **Branch `step-7`, awaiting review.** See the update below |
 
-This `handoff` branch is cut from `step-6` and adds only this file and a pointer in `AGENTS.md`.
+**Update (2026-10-07, step 7 session):** work has moved to a **Windows** PC (Git Bash + PowerShell, no Python, no ffmpeg, Edge but no Chrome). Node was upgraded there from 20.17 to 24.19 LTS via winget. There is no `.env` on that machine, so it runs on fallbacks only. `src/assets/gallery/` (the 177MB originals) is not on it; that folder is still only on the Mac. Step 7 results: Lighthouse (local dev server, mobile) Accessibility 100 and Best Practices 100 on all four pages; SEO 92 locally only because of the dev toolbar link. Performance still has to be measured on the Vercel preview. Scripted headless-Edge checks at 375px passed: no horizontal scroll, the call bar clears the footer, no console errors, the mobile menu (Esc, outside tap), the lightbox (open, arrows, wrap, Esc, focus return, scroll lock, backdrop) and the contact form (inline errors, focus, redirect, no-JS POST, honeypot). Not checked: real iOS Safari.
 
 ## 3. How the user likes to work (important)
 
@@ -49,7 +49,7 @@ This `handoff` branch is cut from `step-6` and adds only this file and a pointer
 - **The user's dev server** runs in the background on port 4321 (`npx astro dev --background`; manage it with `npx astro dev status|stop|logs`). `astro` isn't on PATH, so use `npx astro`.
 - **Astro reads `.env` only at startup.** After any `.env` change, restart the dev server. An enquiry "not sending" turned out to be exactly this.
 - **For your own testing,** don't touch the user's server. Run a second one: `npx astro dev --port 4399 --ignore-lock`, and stop it afterwards with `pkill -f "astro dev --port 4399"`. You can override env vars per run, e.g. `PRICES_CSV_URL=http://localhost:8765/x.csv npx astro dev ...`.
-- **Shell is zsh,** which doesn't word-split unquoted variables. Use arrays (`O=(-H "Origin: ...")` then `"${O[@]}"`) or `while read` loops.
+- **Shell:** on the Mac it was zsh (no word-splitting of unquoted variables; use arrays). On Windows, use Git Bash or PowerShell; there is no `pkill`, so stop background servers through the tool that started them.
 - **Astro's built-in `checkOrigin`** rejects form POSTs without a matching `Origin` header. Add `-H "Origin: http://localhost:4399"` when testing `/api/contact` with curl.
 - **`trailingSlash: 'never'`:** in dev, `/prices/` returns 404. In production, Vercel's generated config 308-redirects `/prices/` to `/prices`. Check `.vercel/output/config.json` after a build to confirm.
 - **ffmpeg is not installed.** The temporary ffmpeg-static copy from an earlier session is gone. `scripts/compress-hero-videos.sh` needs `FFMPEG=/path/to/ffmpeg` (or `brew install ffmpeg`, but Homebrew isn't installed either). sharp, which is installed, handles all image work.

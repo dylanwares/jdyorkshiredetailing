@@ -10,18 +10,18 @@ import { nav, site } from '../data/site';
     </div>
     <nav aria-label="Footer">
       <p class="eyebrow mb-3">Explore</p>
-      <ul class="space-y-2 text-sm">
-        {nav.map((item) => <li><a href={item.href} class="text-slate-300 hover:text-brand">{item.label}</a></li>)}
+      <ul class="text-sm">
+        {nav.map((item) => <li><a href={item.href} class="inline-block py-2 text-slate-300 hover:text-brand">{item.label}</a></li>)}
       </ul>
     </nav>
     <div>
       <p class="eyebrow mb-3">Get in touch</p>
-      <ul class="space-y-2 text-sm text-slate-300">
-        <li><a href={site.phoneHref} class="hover:text-brand">{site.phone}</a></li>
-        <li><a href={`mailto:${site.email}`} class="hover:text-brand">{site.email}</a></li>
-        <li>{site.hours}</li>
+      <ul class="text-sm text-slate-300">
+        <li><a href={site.phoneHref} class="inline-block py-2 hover:text-brand">{site.phone}</a></li>
+        <li><a href={`mailto:${site.email}`} class="inline-block py-2 break-all hover:text-brand">{site.email}</a></li>
+        <li class="py-2">{site.hours}</li>
         <li>
-          <a href={site.instagramUrl} target="_blank" rel="noopener" class="hover:text-brand">Instagram @{site.instagramHandle}</a>
+          <a href={site.instagramUrl} target="_blank" rel="noopener" class="inline-block py-2 hover:text-brand">Instagram @{site.instagramHandle}</a>
         </li>
       </ul>
     </div>

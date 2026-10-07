@@ -7,13 +7,15 @@ interface Props {
 
 const { categories } = Astro.props;
 const fmt = (n: number | null) => (n === null ? 'Contact for quote' : `£${n}`);
+// Category names come from the sheet and may contain spaces, which aren't valid in an id.
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 ---
 
 <div class="space-y-14">
   {
     categories.map((cat) => (
-      <section aria-labelledby={`cat-${cat.category}`}>
-        <h2 id={`cat-${cat.category}`} class="border-l-4 border-brand pl-4 text-2xl sm:text-3xl">{cat.category}</h2>
+      <section aria-labelledby={`cat-${slug(cat.category)}`}>
+        <h2 id={`cat-${slug(cat.category)}`} class="border-l-4 border-brand pl-4 text-2xl sm:text-3xl">{cat.category}</h2>
         <ul class="mt-6">
           {cat.services.map((s) => (
             <li class="flex flex-col gap-2 border-b border-line py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-8">

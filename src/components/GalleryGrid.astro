@@ -5,14 +5,18 @@ import Placeholder from './Placeholder.astro';
 
 interface Props {
   images: GalleryImage[];
+  /** How many tiles load straight away; the rest load as they scroll into view. */
+  eagerCount?: number;
 }
+
+const { images, eagerCount = 0 } = Astro.props;
 
 const WIDTHS = [480, 960, 1600] as const;
 
 // Build thumbnail srcset and full-size URL for each photo: Drive photos go through the
 // resize route, bundled fallback photos through Astro's image service.
 const tiles = await Promise.all(
-  Astro.props.images.map(async (image) => {
+  images.map(async (image) => {
     if (image.source === 'drive') {
       const url = (w: number) => `/api/gallery/${image.id}?w=${w}`;
       return {
@@ -51,7 +55,7 @@ const tiles = await Promise.all(
               srcset={tile.srcset}
               sizes="(min-width: 1152px) 384px, (min-width: 768px) 33vw, 50vw"
               alt={`Detailing work, photo ${i + 1}`}
-              loading={i < 6 ? 'eager' : 'lazy'}
+              loading={i < eagerCount ? 'eager' : 'lazy'}
               decoding="async"
               class="h-full w-full rounded-sm object-cover transition-transform duration-500 group-hover:scale-105"
             />
