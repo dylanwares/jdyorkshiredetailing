@@ -5,13 +5,27 @@ import Footer from '../components/Footer.astro';
 import { site } from '../data/site';
 
 interface Props {
+  /** Page title; the business name is appended. */
   title: string;
   description: string;
+  /** Social preview image, relative to the site root. */
+  image?: string;
+  imageAlt?: string;
+  /** Keep this page out of search results (e.g. 404). */
+  noindex?: boolean;
 }
 
-const { title, description } = Astro.props;
-const fullTitle = title === site.name ? title : `${title} | ${site.shortName}`;
-const canonical = new URL(Astro.url.pathname, site.url).href;
+const {
+  title,
+  description,
+  image = '/og-image.jpg',
+  imageAlt = `${site.name} logo over a freshly detailed car`,
+  noindex = false,
+} = Astro.props;
+const fullTitle = `${title} | ${site.shortName}`;
+// Canonical URLs never end in a slash (matches trailingSlash: 'never' and the sitemap).
+const canonical = new URL(Astro.url.pathname.replace(/\/+$/, '') || '/', site.url).href;
+const imageUrl = new URL(image, site.url).href;
 ---
 
 <!doctype html>
@@ -21,15 +35,28 @@ const canonical = new URL(Astro.url.pathname, site.url).href;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0a0e14" />
     <meta name="generator" content={Astro.generator} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
-    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    {!noindex && <link rel="canonical" href={canonical} />}
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:type" content="website" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={imageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
+    <slot name="head" />
   </head>
   <body class="pb-16 md:pb-0">
     <a

@@ -11,6 +11,15 @@ export const site = {
   phoneHref: 'tel:+447000000000', // PLACEHOLDER
   email: 'hello@jdyorkshiredetailingcompany.com', // PLACEHOLDER
   hours: 'Mon–Sat, 8am–6pm', // PLACEHOLDER
+  // Machine-readable version of `hours` for search engines. Keep the two in step. PLACEHOLDER
+  openingHours: [
+    { days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], opens: '08:00', closes: '18:00' },
+  ],
+  // Service-area business: no street address is published.
+  locality: 'Barnsley',
+  region: 'South Yorkshire',
+  country: 'GB',
+  areaServed: ['Barnsley', 'Sheffield', 'Rotherham', 'Doncaster'],
 } as const;
 
 export const nav = [

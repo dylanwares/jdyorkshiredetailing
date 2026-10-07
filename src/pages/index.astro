@@ -4,13 +4,19 @@ import GalleryGrid from '../components/GalleryGrid.astro';
 import Placeholder from '../components/Placeholder.astro';
 import Lightbox from '../components/Lightbox.astro';
 import CTA from '../components/CTA.astro';
+import JsonLd from '../components/JsonLd.astro';
 import { getGalleryImages } from '../lib/gallery';
+import { getPrices } from '../lib/prices';
+import { businessSchema } from '../lib/schema';
 import { site } from '../data/site';
 
 // Server-rendered so the gallery preview follows the Drive folder without a redeploy.
 export const prerender = false;
 
-const galleryImages = (await getGalleryImages()).slice(0, 6);
+const [galleryImages, prices] = await Promise.all([
+  getGalleryImages().then((images) => images.slice(0, 6)),
+  getPrices(),
+]);
 Astro.response.headers.set('Cache-Control', 's-maxage=1800, stale-while-revalidate=3600');
 
 const services = [
@@ -26,9 +32,10 @@ const reasons = [
 ---
 
 <BaseLayout
-  title={site.name}
-  description="Mobile car detailing in Barnsley and across South Yorkshire. Valets, machine polishing and ceramic coating brought to your door."
+  title="Mobile Car Detailing in Barnsley"
+  description="Mobile car detailing in Barnsley and across South Yorkshire. Valets, machine polishing and ceramic coating, brought to your door."
 >
+  <JsonLd slot="head" data={businessSchema(prices)} />
   <section class="relative isolate flex min-h-[85svh] items-end overflow-hidden md:items-center">
     <div id="hero-bg" class="absolute inset-0 -z-10 will-change-transform">
       <video
