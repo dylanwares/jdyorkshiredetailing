@@ -5,7 +5,7 @@ import { getGalleryImages } from '../../../lib/gallery';
 
 export const prerender = false;
 
-const WIDTHS = [480, 960, 1600];
+const WIDTHS = [320, 480, 960, 1600];
 const DEFAULT_WIDTH = 960;
 
 // Resized WebP copies of Drive photos. Originals are 4-6MB phone photos, so visitors only ever
@@ -44,7 +44,7 @@ export const GET: APIRoute = async ({ params, url }) => {
     return new Response(new Uint8Array(body), {
       headers: {
         'Content-Type': 'image/webp',
-        'Cache-Control': 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400',
+        'Cache-Control': 'public, max-age=2592000, s-maxage=2592000, stale-while-revalidate=86400',
       },
     });
   } catch {

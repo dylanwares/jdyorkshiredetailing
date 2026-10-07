@@ -17,7 +17,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=1800, stale-while-revalida
 <BaseLayout title="Our Work: Car Detailing Gallery" description="Photos of recent mobile car detailing jobs across Barnsley and South Yorkshire by Jack Daniel’s Yorkshire Detailing Company.">
   <PageHeader eyebrow="Our work" title="Recent results" intro="A look at recent jobs, straight from the driveway. Tap a photo to see it larger." />
   <div class="container-page py-14">
-    <GalleryGrid images={images} />
+    <GalleryGrid images={images} eagerCount={4} />
     <div class="mt-10 text-center">
       <a href={site.instagramUrl} target="_blank" rel="noopener" class="btn-primary">Follow us on Instagram</a>
     </div>

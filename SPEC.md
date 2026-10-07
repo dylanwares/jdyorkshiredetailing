@@ -186,17 +186,17 @@ Create `OWNER_GUIDE.md`: a plain-English, one-page guide for the business owner 
 ## 12. Acceptance Criteria
 
 - [ ] Editing a price in the sheet appears on `/prices` within 10 minutes without a redeploy
-- [ ] Setting `active` to FALSE hides that service
-- [ ] A malformed row is skipped; the rest of the page still renders
-- [ ] With the sheet URL broken, `/prices` shows fallback prices
+- [x] Setting `active` to FALSE hides that service
+- [x] A malformed row is skipped; the rest of the page still renders
+- [x] With the sheet URL broken, `/prices` shows fallback prices
 - [ ] A photo uploaded to the Drive folder appears on `/our-work` within 30 minutes
-- [ ] Non-image files in the folder are ignored
-- [ ] With the Drive key or folder ID missing or broken, the gallery shows fallback images
-- [ ] The Drive API key never appears in page HTML, client JS or network requests from the browser
-- [ ] Contact form sends an email to the business; spam submissions (honeypot filled) are silently dropped
-- [ ] Site works well on a 375px-wide screen
+- [x] Non-image files in the folder are ignored
+- [x] With the Drive key or folder ID missing or broken, the gallery shows fallback images
+- [x] The Drive API key never appears in page HTML, client JS or network requests from the browser
+- [x] Contact form sends an email to the business; spam submissions (honeypot filled) are silently dropped
+- [x] Site works well on a 375px-wide screen
 - [ ] Lighthouse scores ≥ 95 on mobile
-- [ ] `npm run build` passes with no type errors; the site runs locally with no env vars set
+- [x] `npm run build` passes with no type errors; the site runs locally with no env vars set
 
 ## 13. Build Order
 

@@ -5,26 +5,31 @@ import Placeholder from './Placeholder.astro';
 
 interface Props {
   images: GalleryImage[];
+  /** How many tiles load straight away; the rest load as they scroll into view. */
+  eagerCount?: number;
 }
 
-const WIDTHS = [480, 960, 1600] as const;
+const { images, eagerCount = 0 } = Astro.props;
+
+// 320 suits two-column phone tiles (~180px wide at ~1.75x pixel density).
+const WIDTHS = [320, 480, 960, 1600] as const;
 
 // Build thumbnail srcset and full-size URL for each photo: Drive photos go through the
 // resize route, bundled fallback photos through Astro's image service.
 const tiles = await Promise.all(
-  Astro.props.images.map(async (image) => {
+  images.map(async (image) => {
     if (image.source === 'drive') {
       const url = (w: number) => `/api/gallery/${image.id}?w=${w}`;
       return {
         src: url(960),
-        srcset: `${url(480)} 480w, ${url(960)} 960w`,
+        srcset: `${url(320)} 320w, ${url(480)} 480w, ${url(960)} 960w`,
         full: url(1600),
       };
     }
-    const [small, medium, large] = await Promise.all(
+    const [tiny, small, medium, large] = await Promise.all(
       WIDTHS.map((width) => getImage({ src: image.src, width, format: 'webp' })),
     );
-    return { src: medium.src, srcset: `${small.src} 480w, ${medium.src} 960w`, full: large.src };
+    return { src: medium.src, srcset: `${tiny.src} 320w, ${small.src} 480w, ${medium.src} 960w`, full: large.src };
   }),
 );
 ---
@@ -51,7 +56,8 @@ const tiles = await Promise.all(
               srcset={tile.srcset}
               sizes="(min-width: 1152px) 384px, (min-width: 768px) 33vw, 50vw"
               alt={`Detailing work, photo ${i + 1}`}
-              loading={i < 6 ? 'eager' : 'lazy'}
+              loading={i < eagerCount ? 'eager' : 'lazy'}
+              fetchpriority={i < Math.min(eagerCount, 2) ? 'high' : undefined}
               decoding="async"
               class="h-full w-full rounded-sm object-cover transition-transform duration-500 group-hover:scale-105"
             />

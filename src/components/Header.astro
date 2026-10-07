@@ -8,10 +8,10 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 
 <header class="sticky top-0 z-50 border-b border-line bg-ink/90 backdrop-blur">
   <div class="container-page flex h-16 items-center justify-between gap-4">
-    <a href="/" class="flex items-center gap-3" aria-label={`${site.name} – home`}>
-      <Image src={logoMark} alt="" width={64} height={34} class="h-8 w-auto" />
+    <a href="/" class="flex items-center gap-3">
+      <Image src={logoMark} alt="" width={64} height={34} densities={[2, 3]} loading="eager" class="h-8 w-auto" />
       <span class="font-display text-sm font-bold uppercase leading-tight tracking-wide">
-        Jack Daniel’s<br /><span class="text-brand">Yorkshire Detailing</span>
+        Jack Daniel’s<br /><span class="text-brand">Yorkshire Detailing</span><span class="sr-only"> – home</span>
       </span>
     </a>
 
@@ -60,6 +60,24 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
     </details>
   </div>
 </header>
+
+<script>
+  // Mobile menu: close on Esc (returning focus to the button), on a tap outside it, or after a link is chosen.
+  const menu = document.querySelector<HTMLDetailsElement>('header details');
+  if (menu) {
+    const close = () => menu.removeAttribute('open');
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && menu.open) {
+        close();
+        menu.querySelector('summary')?.focus();
+      }
+    });
+    document.addEventListener('click', (event) => {
+      if (menu.open && !menu.contains(event.target as Node)) close();
+    });
+    menu.querySelectorAll('a').forEach((link) => link.addEventListener('click', close));
+  }
+</script>
 
 <!-- Persistent click-to-call on mobile -->
 <div class="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-ink/95 p-2 backdrop-blur md:hidden">

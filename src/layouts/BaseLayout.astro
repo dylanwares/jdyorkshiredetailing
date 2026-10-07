@@ -3,6 +3,8 @@ import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { site } from '../data/site';
+// Headings (including the home page h1) use Space Grotesk; preloading it avoids a late font swap.
+import headingFont from '@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2?url';
 
 interface Props {
   /** Page title; the business name is appended. */
@@ -38,6 +40,7 @@ const imageUrl = new URL(image, site.url).href;
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" href={headingFont} as="font" type="font/woff2" crossorigin />
     {!noindex && <link rel="canonical" href={canonical} />}
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
