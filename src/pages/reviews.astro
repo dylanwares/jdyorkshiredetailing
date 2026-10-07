@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import ReviewCard from '../components/ReviewCard.astro';
+import CTA from '../components/CTA.astro';
+import { getReviews, reviewSummary } from '../lib/reviews';
+
+const reviews = await getReviews();
+const { count, average } = reviewSummary(reviews);
+---
+
+<BaseLayout
+  title="Customer Reviews"
+  description={`Read ${count} reviews from customers of Jack Daniel’s Yorkshire Detailing Company, mobile car detailing in Barnsley and South Yorkshire.`}
+>
+  <PageHeader
+    eyebrow="Reviews"
+    title="What our customers say"
+    intro={`${count} reviews, rated ${average.toFixed(1)} out of 5 on average. Real feedback from customers across Barnsley and South Yorkshire.`}
+  />
+  <div class="container-page py-14">
+    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {reviews.map((review) => <ReviewCard review={review} />)}
+    </div>
+  </div>
+  <CTA />
+</BaseLayout>

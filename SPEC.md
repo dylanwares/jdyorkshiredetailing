@@ -44,12 +44,13 @@ No database. No authentication. No admin UI.
    - Short services overview (links to Prices)
    - Gallery preview (latest 6 photos)
    - Before/after slider (see §5b), only shown when the Drive folder has at least one complete pair
-   - Trust section: why choose us, reviews placeholder
+   - Trust section: why choose us, and 3 customer reviews with a link to all of them (see §5c)
    - CTA band → contact
 2. **Prices (`/prices`)** — full price list rendered from the Google Sheet (see §4)
 3. **Our Work (`/our-work`)** — gallery grid from Google Drive (see §5)
 4. **Contact (`/contact`)** — enquiry form (see §6), phone, email, service area
-5. **404** — branded, links home
+5. **Reviews (`/reviews`)** — every customer review, newest first (see §5c)
+6. **404** — branded, links home
 
 Global: sticky header with nav + "Call now" button on mobile, footer with contact details, Instagram link, copyright.
 
@@ -102,6 +103,13 @@ A comparison slider on the home page, just below the gallery preview. The client
 - There are no bundled fallback photos (a made-up pair would be misleading). With no pairs, or with Drive unset or failing, the section is left out of the page.
 - The latest 4 pairs are shown: one pair is centred and wide, two or more sit in two columns on desktop.
 - `src/components/BeforeAfter.astro`: a 4:3 frame (no layout shift), the "before" photo clipped over the "after" one, "Before" and "After" labels, and a handle. A native `<input type="range">` covers the frame, so touch, mouse and keyboard (arrows move 5%, Home/End jump to the ends) work, it is announced to screen readers, and vertical swipes still scroll the page. No library. Photos are lazy-loaded.
+
+## 5c. Reviews
+
+- The reviews carried over from the client's old site live in `src/data/reviews.json` (author, rating, date, text, optional `featured` flag). They are the client's own reviews, kept word for word, with only the capitalisation of names tidied. `"published": false` hides one without deleting it.
+- `src/lib/reviews.ts` is the single place the pages get reviews from (`getReviews()`), so other sources can be merged in later. Planned: Google reviews through the Places API, shown above the legacy ones with Google's attribution. The Places API only returns a few reviews (up to 5) chosen by Google, needs the Business Profile's Place ID and a billed Google Cloud key, and Google's terms limit how long review text may be stored, so those would be cached briefly rather than saved.
+- The home page shows 3 reviews (Google ones first, then `featured` legacy ones, then the newest) and links to `/reviews`, which lists them all in a grid, newest first.
+- No review or rating structured data (JSON-LD): Google ignores a business's own reviews of itself, and it risks a penalty.
 
 ## 6. Contact Form
 

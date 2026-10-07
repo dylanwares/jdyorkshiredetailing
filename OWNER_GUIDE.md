@@ -46,6 +46,12 @@ The home page can show a **Before & after** slider: visitors drag a handle to co
 - With no pairs in the folder, the section doesn't appear at all.
 - For the best result, take both photos from the **same angle and distance**, in landscape (sideways), and use JPEG, like the gallery photos. Photos are shown in a 4:3 frame, so the edges of very tall photos get cropped.
 
+## Customer reviews
+
+The reviews from your old website are now on the new site: three on the home page, and all of them on the **Reviews** page, newest first. They appear exactly as customers wrote them.
+
+To add a review, hide one, or choose which three appear on the home page, ask Dylan. Once your Google Business Profile is set up, your latest Google reviews will appear above these automatically.
+
 ## Enquiries
 
 When someone fills in the form on the Contact page, the enquiry is **emailed to you** straight away. If the phone alert is set up, you'll get a **Telegram message** too. Reply to the email to reply to the customer, if they left an email address. Their phone number is always included.
