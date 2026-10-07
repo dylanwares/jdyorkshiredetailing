@@ -31,7 +31,8 @@ The spec's build order (SPEC.md §13) has 7 steps. Each step was built on its ow
 | 5 | Contact form, Resend, Telegram | On `main` (PR #2) |
 | 6 | SEO, JSON-LD, OG image, favicons, robots | On `main` (PR #4) |
 | 7 | Accessibility/performance pass, README, OWNER_GUIDE.md | On `main` (merged 2026-10-07). See the update below |
-| 9 | Before/after slider on the home page | **Branch `step-9`, awaiting review** (steps 8 and 10 onwards: see §8) |
+| 9 | Before/after slider on the home page | On `main` (PR #5). Tested against a real Drive pair (volvo-before/after) |
+| 11a | Reviews: legacy reviews stored on the site (`/reviews` and 3 on home) | **Branch `step-11`, awaiting review.** Google reviews still to do, see §8 |
 
 **Update (2026-10-07, step 7 session):** work has moved to a **Windows** PC (Git Bash + PowerShell, no Python, no ffmpeg, Edge but no Chrome). Node was upgraded there from 20.17 to 24.19 LTS via winget. There is no `.env` on that machine, so it runs on fallbacks only. `src/assets/gallery/` (the 177MB originals) is not on it; that folder is still only on the Mac. Step 7 results: Lighthouse (local dev server, mobile) Accessibility 100 and Best Practices 100 on all four pages; SEO 92 locally only because of the dev toolbar link. Performance still has to be measured on the Vercel preview. Scripted headless-Edge checks at 375px passed: no horizontal scroll, the call bar clears the footer, no console errors, the mobile menu (Esc, outside tap), the lightbox (open, arrows, wrap, Esc, focus return, scroll lock, backdrop) and the contact form (inline errors, focus, redirect, no-JS POST, honeypot). Not checked: real iOS Safari.
 
@@ -70,7 +71,7 @@ src/lib/gallery.ts          getGalleryImages(): Drive API files.list (JPEG/PNG/W
                             fallback = src/assets/gallery-fallback/*.jpg via import.meta.glob
 src/lib/before-after.ts     getBeforeAfterPairs(): photos in the "Before and After" subfolder of the Drive folder, paired by name
                             (`x-before` / `x-after`, logic in src/lib/pairing.ts). Unpaired photos are never shown. 30 min cache
-src/components/BeforeAfter.astro  The slider (clipped before image + transparent range input). Used on the home page only
+src/components/BeforeAfter.astro  The slider (clipped before image; pointer-event dragging plus a hidden range input for a11y). Touch-fix history: a native range with a 1px thumb could not be grabbed on real phones. Used on the home page only
 src/pages/api/gallery/[id].ts  Image proxy: only IDs in the current listing or in a complete before/after pair; fetches Drive's thumbnailLink at =s{w}
                             (fast, ~0.5s), falls back to alt=media original; sharp → WebP; widths 480/960/1600;
                             long cache headers. The API key never reaches the browser
@@ -86,7 +87,9 @@ src/components/             Header (sticky + mobile menu + fixed mobile call bar
                             PriceTable, GalleryGrid, Lightbox (<dialog>), ContactForm, JsonLd, Placeholder
 src/layouts/BaseLayout.astro  Head: title "<title> | JD Yorkshire Detailing", description, canonical (no trailing slash),
                             OG/Twitter tags, favicons, `noindex` prop, `<slot name="head">` for JSON-LD
-src/pages/                  index (SSR: gallery preview + JSON-LD), prices (SSR), our-work (SSR), contact (SSR),
+src/data/reviews.json       The client's 29 reviews from his old site (28 published; one is flagged `"published": false` because the old
+                            export marked it "no"). src/lib/reviews.ts getReviews() is the single seam for adding Google reviews later
+src/pages/                  index (SSR: gallery preview + JSON-LD), reviews (static), prices (SSR), our-work (SSR), contact (SSR),
                             404 (static, noindex), robots.txt.ts
 scripts/make-brand-images.mjs  Regenerates public/og-image.jpg, favicon.ico, icon-192/512, apple-touch-icon from the logo
 scripts/compress-hero-videos.sh  Re-encodes assets/hero bg*.mp4 → public/videos/hero-N(.mobile).mp4 + poster
@@ -135,7 +138,7 @@ I don't know what is set in **Vercel**. Remind the user that every variable abov
 - hours `Mon–Sat, 8am–6pm` and the matching `openingHours`
 - the `areaServed` towns (Barnsley, Sheffield, Rotherham, Doncaster), which were my guess
 
-The home page reviews are placeholders ("Customer review placeholder"). The services cards on the home page use `Placeholder` tiles instead of photos.
+The home page reviews are now real (see §8, step 11). The services cards on the home page still use `Placeholder` tiles instead of photos.
 
 ## 8. Next steps
 
@@ -147,7 +150,10 @@ Step 7 is merged. What's left before launch, in order. Each step gets its own `s
    - Tested in headless Edge at 375px and desktop with stand-in photos: tap and drag at any height, touch drag, keyboard, focus ring, aria values, page still scrolls with a vertical swipe. The Drive lookup (folder and image queries) was checked against the real API and returns the expected empty result. **Not tested against a real pair in Drive**, so do that once the folder exists (tick the new §12 item).
    - Decision: **no bundled fallback pair.** A made-up pair would be misleading, so with no pairs the section is simply left out.
 3. **Step 10: privacy and legal.** A `/privacy` page (the contact form collects name, phone and postcode), linked from the footer and the form. Company name and number in the footer if the business is a limited company. Analytics are optional (Vercel Web Analytics needs no cookie banner).
-4. **Step 11: real content (needs the client).** Replace the placeholders listed in §7: phone, email, hours, `areaServed` towns, the reviews and the service-card photos. Add real before/after pairs. Fill in the user's contact details in `OWNER_GUIDE.md`. Optional: a thousands separator for prices (`£1120` → `£1,120`).
+4. **Step 11: real content and reviews.**
+   - **Done on `step-11`:** the old reviews are stored in `src/data/reviews.json` and shown on the home page (3) and `/reviews` (all). Kept verbatim (including typos and emoji), names capitalised consistently. Reviewers' full names are shown as supplied. Ask the client if he'd rather shorten to first name plus initial. One review ("A Fermie", Oct 2026, exported with "no" in the first column, which looks like "not approved") is hidden pending the client's OK. Lisa & Martin's review contains an odd "A⭐️⭐️⭐️" line, left as written.
+   - **Decided, not built: Google reviews through the Places API,** merged above the legacy ones in `getReviews()`. Needs the Google Business Profile to exist first (for its Place ID), and a Google Cloud key with billing enabled and the Places API turned on. Returns at most about 5 reviews, chosen by Google, so show those plus a rating summary linking to the profile, with Google's attribution. Check Google's current terms on caching before building. `/reviews` is static today and will need to become server-rendered (with an edge cache) when this is added. Add a "Leave us a Google review" link (the profile's review link) to the footer and contact page.
+   - **Still needs the client:** phone, email, hours, `areaServed` towns, the three service-card photos, and more before/after pairs. Fill in the user's contact details in `OWNER_GUIDE.md`. Optional: a thousands separator for prices (`£1120` → `£1,120`).
 5. **Step 12: production setup and testing.** Add every variable from §7 in Vercel's Production environment. Verify the domain in Resend (DNS records in Cloudflare; this doesn't affect the current site). Optional Telegram bot. Send a real enquiry on production. Time a price edit (about 10 minutes) and a new photo (about 30 minutes). Test on a real iPhone and an Android phone. Check the Google Rich Results Test and an OG preview (e.g. opengraph.xyz).
 6. **Step 13: protect the old site's search ranking.** List the old site's indexed URLs (Search Console or a `site:` search). Add 301 redirects to the matching new pages. Keep a copy of the old site.
 7. **Step 14: switch the domain.** In Vercel, add `jdyorkshiredetailingcompany.com`. In Cloudflare, change only the web records (apex and `www`), set to "DNS only", and **leave the MX/email records untouched**. `www` should redirect to the bare domain. Then check every page, the form and the redirects.

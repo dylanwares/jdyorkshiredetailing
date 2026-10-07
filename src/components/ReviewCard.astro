@@ -1,0 +1,23 @@
+---
+import { reviewMonth, type Review } from '../lib/reviews';
+
+interface Props {
+  review: Review;
+  /** Cut long reviews short (the full text is still in the page); used on the home page. */
+  clamp?: boolean;
+}
+
+const { review, clamp = false } = Astro.props;
+---
+
+<figure class="flex h-full flex-col border border-line bg-surface p-6">
+  <p class="text-brand">
+    <span aria-hidden="true">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
+    <span class="sr-only">Rated {review.rating} out of 5</span>
+  </p>
+  <blockquote class:list={['mt-3 whitespace-pre-line text-slate-300', clamp && 'line-clamp-[12]']}>{review.text}</blockquote>
+  <figcaption class="mt-auto pt-4 text-sm">
+    <span class="font-semibold">{review.author}</span>
+    <span class="text-muted"> · {reviewMonth(review.date)}</span>
+  </figcaption>
+</figure>
