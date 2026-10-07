@@ -2,7 +2,7 @@ import Papa from 'papaparse';
 import { z } from 'zod';
 import { PRICES_CSV_URL } from 'astro:env/server';
 import fallbackData from '../data/prices.fallback.json';
-import { getCache, getStale, setCache } from './cache';
+import { cachedLoad } from './cache';
 
 export interface PriceService {
   service: string;
@@ -17,7 +17,6 @@ export interface PriceCategory {
   services: PriceService[];
 }
 
-const CACHE_KEY = 'prices';
 const CACHE_TTL_MS = 10 * 60 * 1000;
 // After a failed refresh, wait this long before trying the sheet again.
 const RETRY_TTL_MS = 60 * 1000;
@@ -96,19 +95,15 @@ async function loadFromSheet(url: string): Promise<PriceCategory[]> {
  * If the sheet is unset, unreachable or empty, serves the last good data, or the bundled fallback.
  */
 export async function getPrices(): Promise<PriceCategory[]> {
-  if (!PRICES_CSV_URL) return fallback;
+  const url = PRICES_CSV_URL;
+  if (!url) return fallback;
 
-  const cached = getCache<PriceCategory[]>(CACHE_KEY);
-  if (cached) return cached;
-
-  try {
-    const prices = await loadFromSheet(PRICES_CSV_URL);
-    setCache(CACHE_KEY, prices, CACHE_TTL_MS);
-    return prices;
-  } catch (error) {
-    console.error('[prices] could not load sheet, using fallback:', error);
-    const prices = getStale<PriceCategory[]>(CACHE_KEY) ?? fallback;
-    setCache(CACHE_KEY, prices, RETRY_TTL_MS);
-    return prices;
-  }
+  return cachedLoad<PriceCategory[]>({
+    key: 'prices',
+    ttlMs: CACHE_TTL_MS,
+    retryMs: RETRY_TTL_MS,
+    load: () => loadFromSheet(url),
+    fallback,
+    onError: (error) => console.error('[prices] could not load sheet, using fallback:', error),
+  });
 }

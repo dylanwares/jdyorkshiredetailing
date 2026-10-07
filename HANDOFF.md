@@ -64,7 +64,9 @@ The spec's build order (SPEC.md §13) has 7 steps. Each step was built on its ow
 ```
 src/data/site.ts            Business details (name, phone, email, hours, area, Instagram). PLACEHOLDERS — see §7
 src/data/prices.fallback.json  Bundled prices used if the sheet fails (same shape as getPrices() output)
-src/lib/cache.ts            In-memory TTL cache with getStale() for serve-stale-on-error
+src/lib/cache.ts            cachedLoad(): in-memory TTL cache shared by prices, gallery and before/after. Serves stale/fallback on error and
+                            shares one refresh between simultaneous requests
+src/lib/drive.ts            Drive files.list helper, image query and file→DriveImage mapping shared by gallery.ts and before-after.ts
 src/lib/prices.ts           getPrices(): published-sheet CSV → papaparse → zod rows → grouped by category, sorted by order.
                             10 min cache, 1 min retry after failure, last-good → fallback JSON
 src/lib/gallery.ts          getGalleryImages(): Drive API files.list (JPEG/PNG/WebP, newest first), 30 min cache,

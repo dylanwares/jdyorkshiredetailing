@@ -90,7 +90,7 @@ The client uploads photos to a Google Drive folder (shared as "anyone with the l
   - No hashtag or caption filter: every image in the folder is shown.
   - Limit: all images on `/our-work`, latest 6 on home. Both pages are server-rendered with `Cache-Control: s-maxage=1800, stale-while-revalidate=3600`.
   - Cache the listing 30 minutes (in memory); on failure, or when the env vars are missing, serve the last good list, then the bundled fallback photos in `src/assets/gallery-fallback/` (resized copies, ~1600px wide, kept small because they ship with the deployment).
-- Image route `src/pages/api/gallery/[id].ts`: fetches Drive's pre-sized thumbnail (about 0.5s) — or the original if the thumbnail is unavailable — converts it to WebP at 480, 960 or 1600px wide (client photos are 4–6MB), and returns it with long `Cache-Control` headers. The API key is never exposed to the browser. Only IDs that appear in the current folder listing are served.
+- Image route `src/pages/api/gallery/[id].ts`: fetches Drive's pre-sized thumbnail (about 0.5s) — or the original if the thumbnail is unavailable — converts it to WebP at 320, 480, 960 or 1600px wide (client photos are 4–6MB), and returns it with long `Cache-Control` headers. The API key is never exposed to the browser. Only IDs that appear in the current folder listing are served.
 - Display: responsive masonry/grid, lazy-loaded, rounded corners, click opens a simple lightbox (no heavy library — a small custom component or `<dialog>`). "Follow us on Instagram" button beneath (the business still has an Instagram; it is just no longer the gallery source).
 
 ## 5b. Before/after slider
@@ -189,7 +189,7 @@ Make it different:
 src/
   components/   Header, Footer, Hero, PriceTable, GalleryGrid, Lightbox, ContactForm, CTA
   layouts/      BaseLayout.astro
-  lib/          prices.ts, gallery.ts, cache.ts, validation.ts, notify.ts, turnstile.ts, rate-limit.ts
+  lib/          prices.ts, gallery.ts, before-after.ts, drive.ts, cache.ts, validation.ts, notify.ts, turnstile.ts, rate-limit.ts
   data/         prices.fallback.json
   assets/       logo, gallery-fallback/ (small resized photos)
   pages/        index, prices, our-work, contact, 404, api/contact.ts
