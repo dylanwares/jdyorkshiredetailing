@@ -24,10 +24,10 @@ const CACHE_KEY = 'gallery';
 const CACHE_TTL_MS = 30 * 60 * 1000;
 // After a failed refresh, wait this long before trying Drive again.
 const RETRY_TTL_MS = 60 * 1000;
-const FETCH_TIMEOUT_MS = 8000;
+export const FETCH_TIMEOUT_MS = 8000;
 
 // sharp can't decode HEIC, so only formats it handles are listed.
-const IMAGE_QUERY = "(mimeType='image/jpeg' or mimeType='image/png' or mimeType='image/webp')";
+export const IMAGE_QUERY = "(mimeType='image/jpeg' or mimeType='image/png' or mimeType='image/webp')";
 
 const localModules = import.meta.glob<{ default: ImageMetadata }>('../assets/gallery-fallback/*.{jpg,jpeg,png,webp}', {
   eager: true,

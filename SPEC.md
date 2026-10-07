@@ -43,6 +43,7 @@ No database. No authentication. No admin UI.
    - Hero: headline, service area, primary CTA ("Get a quote") and phone click-to-call, dark video background
    - Short services overview (links to Prices)
    - Gallery preview (latest 6 photos)
+   - Before/after slider (see §5b), only shown when the Drive folder has at least one complete pair
    - Trust section: why choose us, reviews placeholder
    - CTA band → contact
 2. **Prices (`/prices`)** — full price list rendered from the Google Sheet (see §4)
@@ -90,6 +91,17 @@ The client uploads photos to a Google Drive folder (shared as "anyone with the l
   - Cache the listing 30 minutes (in memory); on failure, or when the env vars are missing, serve the last good list, then the bundled fallback photos in `src/assets/gallery-fallback/` (resized copies, ~1600px wide, kept small because they ship with the deployment).
 - Image route `src/pages/api/gallery/[id].ts`: fetches Drive's pre-sized thumbnail (about 0.5s) — or the original if the thumbnail is unavailable — converts it to WebP at 480, 960 or 1600px wide (client photos are 4–6MB), and returns it with long `Cache-Control` headers. The API key is never exposed to the browser. Only IDs that appear in the current folder listing are served.
 - Display: responsive masonry/grid, lazy-loaded, rounded corners, click opens a simple lightbox (no heavy library — a small custom component or `<dialog>`). "Follow us on Instagram" button beneath (the business still has an Instagram; it is just no longer the gallery source).
+
+## 5b. Before/after slider
+
+A comparison slider on the home page, just below the gallery preview. The client adds a subfolder called "Before and After" (any case; "Before & After" also works) inside the gallery folder and uploads pairs of photos named `<name>-before` and `<name>-after` (e.g. `audi-a3-before.jpg`, `audi-a3-after.jpg`).
+
+- `src/lib/pairing.ts` pairs files by name, ignoring case, extension and "-", "_" or space separators. **A photo without its partner is never shown**, and neither is a file that doesn't follow the naming. If a name appears twice, the newest file is used. Pairs are ordered by their newest file.
+- `src/lib/before-after.ts` finds the subfolder with the Drive API, lists its images, pairs them, and caches for 30 minutes (serving the last good list if Drive fails).
+- The image route `/api/gallery/[id]` serves a photo only if it is in the gallery listing or in a complete pair.
+- There are no bundled fallback photos (a made-up pair would be misleading). With no pairs, or with Drive unset or failing, the section is left out of the page.
+- The latest 4 pairs are shown: one pair is centred and wide, two or more sit in two columns on desktop.
+- `src/components/BeforeAfter.astro`: a 4:3 frame (no layout shift), the "before" photo clipped over the "after" one, "Before" and "After" labels, and a handle. A native `<input type="range">` covers the frame, so touch, mouse and keyboard (arrows move 5%, Home/End jump to the ends) work, it is announced to screen readers, and vertical swipes still scroll the page. No library. Photos are lazy-loaded.
 
 ## 6. Contact Form
 
@@ -195,6 +207,7 @@ Create `OWNER_GUIDE.md`: a plain-English, one-page guide for the business owner 
 - [x] The Drive API key never appears in page HTML, client JS or network requests from the browser
 - [x] Contact form sends an email to the business; spam submissions (honeypot filled) are silently dropped
 - [x] Site works well on a 375px-wide screen
+- [ ] A complete before/after pair in the Drive subfolder appears as a slider on the home page within 30 minutes; a photo without its partner never appears
 - [ ] Lighthouse scores ≥ 95 on mobile
 - [x] `npm run build` passes with no type errors; the site runs locally with no env vars set
 

@@ -1,0 +1,143 @@
+---
+import { getImage } from 'astro:assets';
+import type { GalleryImage } from '../lib/gallery';
+import type { BeforeAfterPair } from '../lib/before-after';
+
+// Before/after comparison sliders. The "before" photo is clipped on top of the "after" photo, and
+// a transparent <input type="range"> over the frame does the dragging, so touch, mouse, keyboard
+// and screen readers all work natively. Drive photos go through the resize route; bundled
+// photos through Astro's image service.
+interface Props {
+  pairs: BeforeAfterPair[];
+}
+
+const { pairs } = Astro.props;
+const WIDTHS = [480, 960, 1600] as const;
+
+const sizes =
+  pairs.length === 1
+    ? '(min-width: 832px) 768px, calc(100vw - 40px)'
+    : '(min-width: 1152px) 560px, (min-width: 768px) calc(50vw - 40px), calc(100vw - 40px)';
+
+async function sources(image: GalleryImage) {
+  if (image.source === 'drive') {
+    const url = (w: number) => `/api/gallery/${image.id}?w=${w}`;
+    return { src: url(960), srcset: WIDTHS.map((w) => `${url(w)} ${w}w`).join(', ') };
+  }
+  const sized = await Promise.all(WIDTHS.map((width) => getImage({ src: image.src, width, format: 'webp' })));
+  return { src: sized[1].src, srcset: sized.map((s, i) => `${s.src} ${WIDTHS[i]}w`).join(', ') };
+}
+
+// "audi-a3" -> "Audi A3"
+const title = (label: string) => label.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/(^|\s)(\S)/g, (_, space, c) => space + c.toUpperCase());
+
+const items = await Promise.all(
+  pairs.map(async (pair) => ({
+    name: title(pair.label),
+    before: await sources(pair.before),
+    after: await sources(pair.after),
+  })),
+);
+---
+
+<div class:list={['grid gap-6', items.length > 1 ? 'md:grid-cols-2' : 'mx-auto max-w-3xl']}>
+  {
+    items.map((item) => (
+      <figure data-ba class="group" style="--pos: 50%">
+        <div class="relative aspect-[4/3] w-full select-none overflow-hidden bg-surface">
+          <img
+            src={item.after.src}
+            srcset={item.after.srcset}
+            sizes={sizes}
+            alt={`${item.name} after detailing`}
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+            class="absolute inset-0 h-full w-full object-cover"
+          />
+          <img
+            src={item.before.src}
+            srcset={item.before.srcset}
+            sizes={sizes}
+            alt={`${item.name} before detailing`}
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+            class="absolute inset-0 h-full w-full object-cover"
+            style="clip-path: inset(0 calc(100% - var(--pos)) 0 0)"
+          />
+
+          <span class="pointer-events-none absolute left-3 top-3 bg-ink/80 px-2.5 py-1 font-display text-xs font-bold uppercase tracking-widest" aria-hidden="true">Before</span>
+          <span class="pointer-events-none absolute right-3 top-3 bg-brand px-2.5 py-1 font-display text-xs font-bold uppercase tracking-widest text-ink" aria-hidden="true">After</span>
+
+          <div class="pointer-events-none absolute inset-y-0 w-0.5 -translate-x-1/2 bg-white shadow-[0_0_8px_rgb(0_0_0/0.6)]" style="left: var(--pos)" aria-hidden="true">
+            <div class="absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-ink shadow-lg group-has-[input:focus-visible]:outline-2 group-has-[input:focus-visible]:outline-offset-4 group-has-[input:focus-visible]:outline-brand">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l-6 6 6 6M15 6l6 6-6 6" /></svg>
+            </div>
+          </div>
+
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            value="50"
+            data-ba-range
+            aria-label={`Compare ${item.name} before and after`}
+            class="absolute inset-0 m-0 h-full w-full cursor-ew-resize opacity-0 [touch-action:pan-y]"
+          />
+        </div>
+        <figcaption class="mt-3 flex items-baseline justify-between gap-4 text-sm">
+          <span class="font-display font-bold uppercase tracking-wide">{item.name}</span>
+          <span class="text-muted">Drag to compare</span>
+        </figcaption>
+      </figure>
+    ))
+  }
+</div>
+
+<style>
+  /* A zero-width thumb makes the handle sit exactly under the finger or cursor; with the
+     default thumb it lags by up to half the thumb's width at either end. */
+  [data-ba-range] {
+    appearance: none;
+    background: transparent;
+  }
+  [data-ba-range]::-webkit-slider-thumb {
+    appearance: none;
+    width: 1px;
+    height: 100%;
+    background: transparent;
+    border: 0;
+  }
+  [data-ba-range]::-moz-range-thumb {
+    width: 1px;
+    height: 100%;
+    background: transparent;
+    border: 0;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLInputElement>('[data-ba-range]').forEach((input) => {
+    const figure = input.closest<HTMLElement>('[data-ba]');
+    if (!figure) return;
+
+    const update = () => {
+      const value = Number(input.value);
+      figure.style.setProperty('--pos', `${value}%`);
+      input.setAttribute('aria-valuetext', `${value}% before, ${100 - value}% after`);
+    };
+    input.addEventListener('input', update);
+
+    // Browsers move a range by 1 per arrow press, which is slow across a photo.
+    input.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      const delta = event.key === 'ArrowRight' ? 5 : -5;
+      input.value = String(Math.min(100, Math.max(0, Number(input.value) + delta)));
+      update();
+    });
+    update();
+  });
+</script>
