@@ -4,7 +4,7 @@ Written 2026-10-07 for the next Claude Code session. Read this, then `SPEC.md` (
 
 ## 1. What this is
 
-A mobile-first marketing site for **Jack Daniel's Yorkshire Detailing Company**, a mobile car detailer based in Barnsley that covers South Yorkshire.
+A mobile-first marketing site for **Jack Daniel's Yorkshire Detailing Company**, a mobile car detailer based in Barnsley that covers Yorkshire.
 
 - Domain: jdyorkshiredetailingcompany.com
 - Repo: github.com/dylanwares/jdyorkshiredetailing (remote `origin` uses SSH; HTTPS has no stored credentials)

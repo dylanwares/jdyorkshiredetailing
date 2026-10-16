@@ -14,7 +14,7 @@ A fast, mobile-first marketing website for a mobile car detailing business. The 
 |---|---|
 | Business name | Jack Daniels Yorkshire Detailing Company |
 | Domain | jdyorkshiredetailingcompany.com |
-| Service Area | Barnsley based, South Yorkshire coverage | 
+| Service Area | Barnsley based, Yorkshire coverage | 
 | Instagram Handle | @jackdydc |
 | Brand Colour | #3BB3F9 |
 

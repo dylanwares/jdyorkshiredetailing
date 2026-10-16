@@ -14,7 +14,7 @@ const categories = await getPrices();
 Astro.response.headers.set('Cache-Control', 's-maxage=600, stale-while-revalidate=3600');
 ---
 
-<BaseLayout title="Car Detailing Prices" description="Mobile car detailing prices in Barnsley and South Yorkshire: valets, machine polishing, ceramic coating and extras.">
+<BaseLayout title="Car Detailing Prices" description="Mobile car detailing prices in Barnsley and Yorkshire: valets, machine polishing, ceramic coating and extras.">
   <JsonLd slot="head" data={businessSchema(categories, { hasOfferCatalog: offerCatalog(categories) })} />
   <PageHeader eyebrow="Prices" title="Simple, clear pricing" intro="Our mobile detailing prices, with everything brought to your door. Not sure which service you need? Get in touch for a quote." />
   <div class="container-page py-14"><PriceTable categories={categories} /></div>

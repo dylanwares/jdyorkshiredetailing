@@ -4,7 +4,7 @@ export const site = {
   shortName: 'JD Yorkshire Detailing',
   url: 'https://jdyorkshiredetailingcompany.com',
   tagline: 'Mobile car detailing, brought to your door',
-  serviceArea: 'Barnsley based · South Yorkshire coverage',
+  serviceArea: 'Barnsley based · Yorkshire coverage',
   instagramHandle: 'jackdydc',
   instagramUrl: 'https://www.instagram.com/jackdydc/',
   phone: '07000 000000', // PLACEHOLDER
@@ -17,7 +17,8 @@ export const site = {
   ],
   // Service-area business: no street address is published.
   locality: 'Barnsley',
-  region: 'South Yorkshire',
+  region: 'South Yorkshire', // Postal county of Barnsley, not the coverage area (see coverageArea)
+  coverageArea: 'Yorkshire',
   country: 'GB',
   areaServed: ['Barnsley', 'Sheffield', 'Rotherham', 'Doncaster'],
 } as const;

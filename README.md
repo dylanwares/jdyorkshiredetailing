@@ -1,6 +1,6 @@
 # JD Yorkshire Detailing — website
 
-Marketing site for Jack Daniel’s Yorkshire Detailing Company, a mobile car detailer in Barnsley covering South Yorkshire. Live at [jdyorkshiredetailingcompany.com](https://jdyorkshiredetailingcompany.com).
+Marketing site for Jack Daniel’s Yorkshire Detailing Company, a mobile car detailer in Barnsley covering Yorkshire. Live at [jdyorkshiredetailingcompany.com](https://jdyorkshiredetailingcompany.com).
 
 The owner updates the site without logging in anywhere:
 

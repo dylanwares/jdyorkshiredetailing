@@ -29,7 +29,10 @@ export function businessSchema(categories: PriceCategory[], extra: Record<string
       addressRegion: site.region,
       addressCountry: site.country,
     },
-    areaServed: site.areaServed.map((name) => ({ '@type': 'City', name })),
+    areaServed: [
+      { '@type': 'AdministrativeArea', name: site.coverageArea },
+      ...site.areaServed.map((name) => ({ '@type': 'City', name })),
+    ],
     openingHoursSpecification: site.openingHours.map((h) => ({
       '@type': 'OpeningHoursSpecification',
       dayOfWeek: h.days,
