@@ -3,22 +3,18 @@
     "category": "Valets",
     "services": [
       {
-        "service": "Mini Valet",
-        "description": "Exterior wash, wheels and tyres, interior vacuum and wipe down.",
-        "price": 35,
-        "order": 1
-      },
-      {
-        "service": "Full Valet",
-        "description": "Everything in the Mini Valet plus deep interior clean, windows and dressing.",
+        "service": "Signature Detail",
+        "description": "Our full valet, inside and out: hand wash, wheels and tyres, full interior clean, windows and dressing.",
         "price": 70,
-        "order": 2
+        "order": 1,
+        "featured": true
       },
       {
-        "service": "Premium Valet",
-        "description": "Full valet with clay bar decontamination and hand wax.",
-        "price": 120,
-        "order": 3
+        "service": "Deep Clean",
+        "description": "An intensive interior clean: seats and carpets shampooed, stains lifted and every surface cleaned.",
+        "price": null,
+        "order": 2,
+        "featured": true
       }
     ]
   },
@@ -29,13 +25,15 @@
         "service": "Machine Polish",
         "description": "Single-stage polish to remove light swirls and restore gloss.",
         "price": 150,
-        "order": 1
+        "order": 1,
+        "featured": true
       },
       {
         "service": "Ceramic Coating",
         "description": "Long-lasting gloss and hydrophobic protection. Includes prep polish.",
         "price": 350,
-        "order": 2
+        "order": 2,
+        "featured": true
       }
     ]
   },
@@ -46,13 +44,15 @@
         "service": "Pet Hair Removal",
         "description": "Thorough removal of embedded pet hair.",
         "price": 20,
-        "order": 1
+        "order": 1,
+        "featured": false
       },
       {
         "service": "Headlight Restoration",
         "description": "Restore cloudy or yellowed headlights.",
         "price": null,
-        "order": 2
+        "order": 2,
+        "featured": false
       }
     ]
   }

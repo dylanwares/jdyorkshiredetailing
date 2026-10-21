@@ -41,7 +41,7 @@ No database. No authentication. No admin UI.
 
 1. **Home (`/`)**
    - Hero: headline, service area, primary CTA ("Get a quote") and phone click-to-call, dark video background
-   - Short services overview (links to Prices)
+   - Short services overview (links to Prices): a fixed SEO intro paragraph, then one card per `featured` service from the price sheet (see §4). Each card's photo is the image in the Drive gallery folder's "Service Card Images" subfolder named after the service (matched ignoring case, spaces, dashes and extension; newest wins; `src/lib/service-images.ts`, cached 30 minutes). No match → placeholder. Served through `/api/gallery/[id]`, which allowlists these photos
    - Gallery preview (latest 6 photos)
    - Before/after slider (see §5b), only shown when the Drive folder has at least one complete pair
    - Trust section: why choose us, and 3 customer reviews with a link to all of them (see §5c)
@@ -61,11 +61,12 @@ Global: sticky header with nav + "Call now" button on mobile, footer with contac
 | Column | Type | Example | Notes |
 |---|---|---|---|
 | `category` | text | `Valets` | Groups services into sections |
-| `service` | text | `Mini Valet` | |
-| `description` | text | `Exterior wash, interior hoover…` | Optional |
+| `service` | text | `Signature Detail` | |
+| `description` | text | `Our full valet, inside and out…` | Optional |
 | `price` | number | `35` | One price per service, shown exactly as entered (as `£35`); blank = "Contact for quote" |
 | `active` | TRUE/FALSE | `TRUE` | FALSE hides the row |
 | `order` | number | `1` | Sort order within category |
+| `featured` | TRUE/blank | `TRUE` | Optional. TRUE also shows the service as a home page card. If no row is featured, the home page shows every service outside the `Extras` category (`homeServices()` in `src/lib/prices.ts`) |
 
 The sheet is published via *File → Share → Publish to web → `Prices` tab → CSV*. Store the URL in env var `PRICES_CSV_URL`.
 

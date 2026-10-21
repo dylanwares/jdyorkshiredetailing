@@ -10,6 +10,8 @@ export interface PriceService {
   /** null = no price set; shown as "Contact for quote". */
   price: number | null;
   order: number;
+  /** Shown as a card in the home page's services section. */
+  featured: boolean;
 }
 
 export interface PriceCategory {
@@ -45,6 +47,7 @@ const rowSchema = z.object({
   description: z.string().default('').transform((v) => v.trim()),
   price: priceCell,
   active: z.string().default('').transform((v) => v.trim().toUpperCase() === 'TRUE'),
+  featured: z.string().default('').transform((v) => v.trim().toUpperCase() === 'TRUE'),
   order: z
     .string()
     .default('')
@@ -80,6 +83,17 @@ export function parsePricesCsv(csv: string): PriceCategory[] {
     category,
     services: services.sort((a, b) => a.order - b.order),
   }));
+}
+
+/**
+ * Services for the home page cards: rows marked `featured`, in sheet order.
+ * If none are featured (e.g. a sheet without the column), every service outside "Extras".
+ */
+export function homeServices(categories: PriceCategory[]): PriceService[] {
+  const all = categories.flatMap((c) => c.services);
+  const featured = all.filter((s) => s.featured);
+  if (featured.length > 0) return featured;
+  return categories.filter((c) => c.category.toLowerCase() !== 'extras').flatMap((c) => c.services);
 }
 
 async function loadFromSheet(url: string): Promise<PriceCategory[]> {

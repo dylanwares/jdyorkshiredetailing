@@ -9,13 +9,15 @@ Your price list is the **Prices** tab of your Google Sheet. Whatever is in that 
 | Column | What to put in it |
 |---|---|
 | **category** | The section heading, e.g. `Valets`. Rows with the same category are grouped together. |
-| **service** | The name, e.g. `Mini Valet`. If this is blank, the row is ignored. |
+| **service** | The name, e.g. `Signature Detail`. If this is blank, the row is ignored. |
 | **description** | A short line about the service. You can leave it blank. |
 | **price** | A number, e.g. `35` or `£35`. Leave it blank to show **"Contact for quote"**. Don't type words here (like "from £35"), or the row won't show. |
 | **active** | `TRUE` shows the service. `FALSE` hides it. |
 | **order** | `1`, `2`, `3`… sets the order within its category. |
+| **featured** | `TRUE` also shows the service as a card in the **What we do** section of the home page, using its name and description. Leave it blank for things like extras. |
 
 - **To change a price:** type the new number.
+- **To change the home page services:** set `featured` to `TRUE` on the services you want there, and leave it blank on the rest. Two to four cards looks best. If no service is featured, the home page shows every service except the Extras.
 - **To hide a service for now:** set `active` to `FALSE`. Set it back to `TRUE` to show it again.
 - **To add a service:** add a new row and fill in every column.
 
@@ -45,6 +47,18 @@ The home page can show a **Before & after** slider: visitors drag a handle to co
 - The latest **4 pairs** are shown. To remove a pair, delete either photo.
 - With no pairs in the folder, the section doesn't appear at all.
 - For the best result, take both photos from the **same angle and distance**, in landscape (sideways), and use JPEG, like the gallery photos. Photos are shown in a 4:3 frame, so the edges of very tall photos get cropped.
+
+## Photos on the home page service cards
+
+Each service card in the **What we do** section of the home page can show a photo. These come from the **Service Card Images** subfolder of your gallery folder.
+
+1. Name each photo **exactly like the service** in your price sheet. For example, `Signature Detail.jpg` or `signature-detail.jpg` for the Signature Detail card. Capitals, spaces and dashes don't matter.
+2. Upload it to the **Service Card Images** folder. It appears within about 30 minutes.
+
+- **If you rename a service in the sheet, rename its photo too.** Otherwise the card goes back to a "photo coming soon" box.
+- To swap a photo, upload a new one with the same name and delete the old one. If two photos share a name, the newest one is used.
+- Photos are shown in a 4:3 frame, so landscape (sideways) photos work best. Use JPEG, like the gallery photos.
+- These photos don't appear in the Our Work gallery.
 
 ## Customer reviews
 

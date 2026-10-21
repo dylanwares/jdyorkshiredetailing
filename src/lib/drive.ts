@@ -20,4 +20,29 @@ export async function driveList(params: Record<string, string>, apiKey: string) 
   return (await response.json()) as { nextPageToken?: string; files?: DriveFile[] };
 }
 
-export const toDriveImage = (file: DriveFile): DriveImage => ({ source: 'drive', id: file.id, name: file.name, thumbnail: file.thumbnailLink });
+/** Images in the first subfolder of `parentId` whose name matches `folderName`, newest first. */
+export async function listSubfolderImages(parentId: string, folderName: RegExp, apiKey: string): Promise<DriveFile[]> {
+  const folders = await driveList(
+    {
+      q: `'${parentId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+      fields: 'files(id,name)',
+      pageSize: '100',
+    },
+    apiKey,
+  );
+  const folder = folders.files?.find((f) => folderName.test(f.name.trim()));
+  if (!folder) return [];
+
+  const images = await driveList(
+    {
+      q: `'${folder.id}' in parents and ${IMAGE_QUERY} and trashed=false`,
+      orderBy: 'createdTime desc',
+      pageSize: '200',
+      fields: 'files(id,name,thumbnailLink)',
+    },
+    apiKey,
+  );
+  return images.files ?? [];
+}
+
+export const toDriveImage =(file: DriveFile): DriveImage => ({ source: 'drive', id: file.id, name: file.name, thumbnail: file.thumbnailLink });

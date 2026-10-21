@@ -3,6 +3,7 @@ import sharp from 'sharp';
 import { GOOGLE_DRIVE_KEY } from 'astro:env/server';
 import { getGalleryImages } from '../../../lib/gallery';
 import { getBeforeAfterPairs } from '../../../lib/before-after';
+import { getServiceImages } from '../../../lib/service-images';
 
 export const prerender = false;
 
@@ -16,11 +17,11 @@ export const GET: APIRoute = async ({ params, url }) => {
   const requested = Number(url.searchParams.get('w'));
   const width = WIDTHS.includes(requested) ? requested : DEFAULT_WIDTH;
 
-  // Only serve files that are in the current folder listing: gallery photos, or photos that are
-  // part of a complete before/after pair.
-  // Both lookups run together (and are cached), so a before/after photo doesn't wait for the gallery list first.
-  const [images, pairs] = await Promise.all([getGalleryImages(), getBeforeAfterPairs()]);
-  const image = [...images, ...pairs.flatMap((pair) => [pair.before, pair.after])].find(
+  // Only serve files that are in the current folder listings: gallery photos, photos that are part
+  // of a complete before/after pair, or service card photos.
+  // The lookups run together (and are cached), so a subfolder photo doesn't wait for the gallery list first.
+  const [images, pairs, serviceImages] = await Promise.all([getGalleryImages(), getBeforeAfterPairs(), getServiceImages()]);
+  const image = [...images, ...pairs.flatMap((pair) => [pair.before, pair.after]), ...serviceImages].find(
     (candidate) => candidate.source === 'drive' && candidate.id === id,
   );
   if (!GOOGLE_DRIVE_KEY || image?.source !== 'drive') return new Response('Not found', { status: 404 });

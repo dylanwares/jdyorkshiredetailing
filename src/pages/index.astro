@@ -10,28 +10,34 @@ import JsonLd from '../components/JsonLd.astro';
 import { getGalleryImages } from '../lib/gallery';
 import { getBeforeAfterPairs } from '../lib/before-after';
 import { getReviews, homeReviews, reviewSummary } from '../lib/reviews';
-import { getPrices } from '../lib/prices';
+import { getPrices, homeServices } from '../lib/prices';
+import { getServiceImages, imageForService } from '../lib/service-images';
 import { businessSchema } from '../lib/schema';
 import { site } from '../data/site';
 
 // Server-rendered so the gallery preview follows the Drive folder without a redeploy.
 export const prerender = false;
 
-const [galleryImages, prices, beforeAfter, allReviews] = await Promise.all([
+const [galleryImages, prices, beforeAfter, allReviews, serviceImages] = await Promise.all([
   getGalleryImages().then((images) => images.slice(0, 6)),
   getPrices(),
   getBeforeAfterPairs().then((pairs) => pairs.slice(0, 4)),
   getReviews(),
+  getServiceImages(),
 ]);
 const reviews = homeReviews(allReviews, 3);
 const { count: reviewCount } = reviewSummary(allReviews);
 Astro.response.headers.set('Cache-Control', 's-maxage=1800, stale-while-revalidate=3600');
 
-const services = [
-  { name: 'Valets', text: 'From a quick refresh to a full interior and exterior deep clean.' },
-  { name: 'Machine Polish', text: 'Remove swirls and restore deep, reflective gloss.' },
-  { name: 'Ceramic Coating', text: 'Long-lasting protection that keeps your car cleaner for longer.' },
-];
+const services = homeServices(prices).map((s) => ({ ...s, image: imageForService(serviceImages, s.service) }));
+// Full class names so Tailwind can see them; `sizes` matches each layout's card width.
+const [serviceGridCols, serviceImageSizes] =
+  services.length <= 1 ? ['', '(min-width: 1152px) 1088px, 100vw'] :
+  services.length === 2 ? ['md:grid-cols-2', '(min-width: 768px) 50vw, 100vw'] :
+  services.length === 3 ? ['md:grid-cols-3', '(min-width: 768px) 33vw, 100vw'] :
+  services.length === 4 ? ['md:grid-cols-2 lg:grid-cols-4', '(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw'] :
+  ['md:grid-cols-2 lg:grid-cols-3', '(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw'];
+const serviceImageUrl = (id: string, w: number) => `/api/gallery/${id}?w=${w}`;
 const reasons = [
   { title: 'We come to you', text: 'Home or work, we bring the water, power and kit.' },
   { title: 'Proper products', text: 'Professional-grade products and safe wash methods.' },
@@ -41,7 +47,7 @@ const reasons = [
 
 <BaseLayout
   title="Mobile Car Detailing in Barnsley"
-  description="Mobile car detailing in Barnsley and across South Yorkshire. Valets, machine polishing and ceramic coating, brought to your door."
+  description="Mobile car valeting and detailing in Barnsley and across South Yorkshire. Full valets and deep cleans, brought to your door."
 >
   <JsonLd slot="head" data={businessSchema(prices)} />
   <!-- The poster is the first thing painted in the hero; fetch it before the browser finds the <video>. -->
@@ -102,14 +108,29 @@ const reasons = [
     <div class="container-page">
       <p class="eyebrow">Services</p>
       <h2 class="mt-3 text-3xl sm:text-4xl">What we do</h2>
-      <div class="mt-8 grid gap-4 md:grid-cols-3">
+      <p class="mt-3 max-w-2xl text-muted">Mobile car valeting and detailing across Barnsley and South Yorkshire. Our Signature Detail is a full valet inside and out, and our deep cleans bring tired, grubby interiors back to life. We bring the water, power and kit, so all you need to do is hand over the keys.</p>
+      <div class={`mt-8 grid gap-4 ${serviceGridCols}`}>
         {
           services.map((s) => (
             <a href="/prices" class="group block border border-line bg-ink transition-colors hover:border-brand">
-              <Placeholder label={`${s.name} photo`} class="aspect-[4/3]" />
+              <div class="overflow-hidden">
+                {s.image ? (
+                  <img
+                    src={serviceImageUrl(s.image.id, 960)}
+                    srcset={[480, 960, 1600].map((w) => `${serviceImageUrl(s.image!.id, w)} ${w}w`).join(', ')}
+                    sizes={serviceImageSizes}
+                    alt={`${s.service}: mobile car valeting and detailing in Barnsley`}
+                    loading="lazy"
+                    decoding="async"
+                    class="aspect-[4/3] w-full object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-110 group-focus-visible:scale-110 motion-reduce:transition-none motion-reduce:group-hover:scale-100 motion-reduce:group-focus-visible:scale-100"
+                  />
+                ) : (
+                  <Placeholder label={`${s.service} photo`} class="aspect-[4/3]" />
+                )}
+              </div>
               <div class="p-5">
-                <h3 class="text-xl group-hover:text-brand">{s.name}</h3>
-                <p class="mt-2 text-sm text-muted">{s.text}</p>
+                <h3 class="text-xl group-hover:text-brand">{s.service}</h3>
+                {s.description && <p class="mt-2 line-clamp-3 text-sm text-muted">{s.description}</p>}
                 <span class="mt-4 inline-block font-display text-xs font-bold uppercase tracking-widest text-brand">See prices →</span>
               </div>
             </a>

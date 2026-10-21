@@ -1,6 +1,6 @@
 import { GOOGLE_DRIVE_FOLDER_ID, GOOGLE_DRIVE_KEY } from 'astro:env/server';
 import { cachedLoad } from './cache';
-import { IMAGE_QUERY, driveList, toDriveImage } from './drive';
+import { listSubfolderImages, toDriveImage } from './drive';
 import { pairBeforeAfter, type FilePair } from './pairing';
 import type { GalleryImage } from './gallery';
 
@@ -15,27 +15,8 @@ const RETRY_TTL_MS = 60 * 1000;
 const FOLDER_NAME = /^before\s*(and|&)\s*after$/i;
 
 async function listPairs(parentId: string, apiKey: string): Promise<BeforeAfterPair[]> {
-  const folders = await driveList(
-    {
-      q: `'${parentId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-      fields: 'files(id,name)',
-      pageSize: '100',
-    },
-    apiKey,
-  );
-  const folder = folders.files?.find((f) => FOLDER_NAME.test(f.name.trim()));
-  if (!folder) return [];
-
-  const images = await driveList(
-    {
-      q: `'${folder.id}' in parents and ${IMAGE_QUERY} and trashed=false`,
-      orderBy: 'createdTime desc',
-      pageSize: '200',
-      fields: 'files(id,name,thumbnailLink)',
-    },
-    apiKey,
-  );
-  return pairBeforeAfter((images.files ?? []).map(toDriveImage));
+  const files = await listSubfolderImages(parentId, FOLDER_NAME, apiKey);
+  return pairBeforeAfter(files.map(toDriveImage));
 }
 
 /**
